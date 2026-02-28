@@ -33,6 +33,13 @@ export default function SettingsScreen() {
         }
     }, [savedCard]);
 
+    function handleGenerate() {
+        const hex = '0123456789ABCDEF';
+        let id = 'E004';
+        for (let i = 0; i < 12; i++) id += hex[Math.floor(Math.random() * 16)];
+        setCard(id);
+    }
+
     function handleSave() {
         saveCardMutation.mutate(card, {
             onSuccess: (cardId) => {
@@ -66,12 +73,19 @@ export default function SettingsScreen() {
                         autoCapitalize="characters"
                         autoCorrect={false}
                     />
-                    <ThemedButton
-                        title="Save Card"
-                        onPress={handleSave}
-                        disabled={saveCardMutation.isPending}
-                        loading={saveCardMutation.isPending}
-                    />
+                    <ThemedView style={styles.buttonRow}>
+                        <ThemedButton
+                            title="Generate Card"
+                            variant="secondary"
+                            onPress={handleGenerate}
+                        />
+                        <ThemedButton
+                            title="Save Card"
+                            onPress={handleSave}
+                            disabled={saveCardMutation.isPending}
+                            loading={saveCardMutation.isPending}
+                        />
+                    </ThemedView>
                     {savedCard && (
                         <ThemedView style={[styles.cardInfoBox, {borderColor}]}>
                             <ThemedText style={[styles.cardInfoLabel, {color: mutedColor}]}>Card ID</ThemedText>
@@ -118,6 +132,10 @@ const styles = StyleSheet.create({
     },
     hint: {
         fontSize: 13,
+    },
+    buttonRow: {
+        flexDirection: 'row',
+        gap: 12,
     },
     cardInfoBox: {
         width: '100%',

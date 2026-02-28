@@ -2,19 +2,41 @@ import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import * as SystemUI from 'expo-system-ui';
+import { useEffect } from 'react';
 import 'react-native-reanimated';
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { Colors } from '@/constants/theme';
 
 const queryClient = new QueryClient();
 
+const lightTheme = {
+  ...DefaultTheme,
+  colors: { ...DefaultTheme.colors, background: Colors.light.background, card: Colors.light.background },
+};
+
+const darkTheme = {
+  ...DarkTheme,
+  colors: { ...DarkTheme.colors, background: Colors.dark.background, card: Colors.dark.background },
+};
+
 export default function RootLayout() {
   const colorScheme = useColorScheme();
+  const theme = colorScheme === 'dark' ? darkTheme : lightTheme;
+
+  useEffect(() => {
+    SystemUI.setBackgroundColorAsync(theme.colors.background);
+  }, [theme.colors.background]);
 
   return (
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-        <Stack screenOptions={{ headerShown: false }}>
+      <ThemeProvider value={theme}>
+        <Stack screenOptions={{
+          headerShown: false,
+          contentStyle: { backgroundColor: theme.colors.background },
+          animation: 'fade',
+        }}>
           <Stack.Screen name="index" />
           <Stack.Screen name="scan-result" />
           <Stack.Screen name="settings" />
