@@ -1,13 +1,14 @@
 import {ActivityIndicator, StyleSheet} from 'react-native';
-import {Link} from 'expo-router';
-import {ThemedText} from '@/components/themed-text';
+import {useRouter} from 'expo-router';
 import {ThemedView} from '@/components/themed-view';
 import {QrScanner} from '@/components/qr-scanner';
 import {CardWarning} from '@/components/card-warning';
+import {ThemedButton} from '@/components/themed-button';
 import {useSavedCard} from '@/hooks/use-saved-card';
 
 export default function WelcomeScreen() {
     const {data: savedCard, isLoading} = useSavedCard();
+    const router = useRouter();
 
     const hasCard = savedCard !== null && savedCard !== undefined && savedCard.trim().length > 0;
 
@@ -19,12 +20,9 @@ export default function WelcomeScreen() {
 
     return (
         <ThemedView style={styles.container}>
-            <ThemedText type="title">Welcome</ThemedText>
             {!hasCard && <CardWarning />}
             <QrScanner cardId={savedCard ?? null} />
-            <Link href="/settings" style={styles.link}>
-                <ThemedText type="link">Go to Settings</ThemedText>
-            </Link>
+            <ThemedButton variant="secondary" title="Settings" onPress={() => router.push('/settings')}/>
         </ThemedView>
     );
 }
@@ -36,9 +34,5 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         padding: 20,
         gap: 8,
-    },
-    link: {
-        marginTop: 24,
-        paddingVertical: 15,
     },
 });

@@ -12,6 +12,9 @@ const DISPLAY_ID_ALPHABET_MAP: Record<string, number> = {
 const TYPE_ICODE_SLI = 1;
 const TYPE_FELICA = 2;
 
+const MAGSTRIPE_PREFIX = 'E004';
+const FELICA_PREFIX = '0';
+
 const CARD_DES_KEY_BYTES = [
     0x7e, 0x92, 0x4e, 0xd8, 0xd8, 0x84, 0x64, 0xc6,
     0x5c, 0xb2, 0xde, 0xea, 0xb0, 0xb0, 0xb0, 0xca,
@@ -84,6 +87,42 @@ function pack5Bit(bytes: number[]): number[] {
     }
 
     return packed;
+}
+
+function unpack5Bit(packed: number[]): number[] {
+    const unpacked: number[] = [];
+    let unpackedBytes = 0;
+    let unpackedBits = 0;
+
+    for (const byte of packed) {
+        let remainingBits = 8;
+
+        while (remainingBits > 0) {
+            const freeBits = 5 - unpackedBits;
+
+            if (unpacked[unpackedBytes] === undefined) {
+                unpacked[unpackedBytes] = 0;
+            }
+
+            if (remainingBits >= freeBits) {
+                unpacked[unpackedBytes++] |= (byte >> (remainingBits - 5 + unpackedBits)) & (31 >> (5 - freeBits));
+                unpackedBits = 0;
+                remainingBits -= freeBits;
+            } else {
+                const valueMasked = byte & (0xFF >> (8 - remainingBits));
+                unpacked[unpackedBytes] |= valueMasked << (5 - unpackedBits - remainingBits);
+                unpackedBits += remainingBits;
+                remainingBits = 0;
+
+                if (unpackedBits === 5) {
+                    unpackedBits = 0;
+                    unpackedBytes++;
+                }
+            }
+        }
+    }
+
+    return unpacked;
 }
 
 export function getCardFormatType(input: string): CardFormatType {
@@ -173,6 +212,64 @@ export function getCardIdFromDisplayId(displayId: string): string {
     }
 
     return output;
+}
+
+export function getDisplayIdFromCardId(cardId: string): string {
+    let cardType: number;
+    if (cardId.startsWith(MAGSTRIPE_PREFIX)) {
+        cardType = TYPE_ICODE_SLI;
+    } else if (cardId.startsWith(FELICA_PREFIX)) {
+        cardType = TYPE_FELICA;
+    } else {
+        throw new CardConversionError('Unknown card type');
+    }
+
+    const hexBytes: number[] = [];
+    for (let i = 0; i < cardId.length; i += 2) {
+        hexBytes.push(parseInt(cardId.substring(i, i + 2), 16));
+    }
+
+    const reversed = hexBytes.reverse();
+
+    const key = bytesToWordArray(CARD_DES_KEY_BYTES);
+    const iv = CryptoJS.lib.WordArray.create([0, 0], 8);
+    const plaintext = bytesToWordArray(reversed);
+
+    let encrypted: CryptoJS.lib.WordArray;
+    try {
+        const result = CryptoJS.TripleDES.encrypt(
+            plaintext,
+            key,
+            {mode: CryptoJS.mode.CBC, padding: CryptoJS.pad.NoPadding, iv},
+        );
+        encrypted = result.ciphertext;
+    } catch {
+        throw new CardConversionError('Failed to encrypt card ID');
+    }
+
+    const encryptedBytes = wordArrayToBytes(encrypted);
+    const unpacked = unpack5Bit(encryptedBytes).slice(0, 13);
+    const card = [...unpacked, 0, 0, 0];
+
+    card[0] ^= cardType;
+    card[13] = 1;
+
+    for (let i = 0; i <= 13; i++) {
+        card[i + 1] ^= card[i];
+    }
+
+    card[14] = cardType;
+    card[15] = getChecksum(card);
+
+    let displayId = '';
+    for (const byte of card) {
+        if (byte < 0 || byte >= DISPLAY_ID_ALPHABET.length) {
+            throw new CardConversionError(`Invalid byte in card ID: ${byte}`);
+        }
+        displayId += DISPLAY_ID_ALPHABET[byte];
+    }
+
+    return displayId;
 }
 
 export function validateAndConvertCard(input: string): string {

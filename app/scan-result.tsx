@@ -1,13 +1,16 @@
-import {ActivityIndicator, Button, StyleSheet} from 'react-native';
+import {ActivityIndicator, StyleSheet} from 'react-native';
 import {useEffect} from 'react';
 import {useLocalSearchParams, useRouter} from 'expo-router';
 import {useMutation} from '@tanstack/react-query';
 import {ThemedText} from '@/components/themed-text';
 import {ThemedView} from '@/components/themed-view';
+import {ThemedButton} from '@/components/themed-button';
+import {useThemeColor} from '@/hooks/use-theme-color';
 
 export default function ScanResultScreen() {
     const {url, cardId} = useLocalSearchParams<{ url: string; cardId: string }>();
     const router = useRouter();
+    const errorColor = useThemeColor({}, 'error');
 
     const {mutate, isPending, isSuccess, isError, error} = useMutation({
         mutationFn: async () => {
@@ -31,13 +34,13 @@ export default function ScanResultScreen() {
                 <>
                     <ThemedText type="title">Success</ThemedText>
                     <ThemedText style={styles.body}>Request completed successfully.</ThemedText>
-                    <Button title="Back to home" onPress={() => router.replace('/')}/>
+                    <ThemedButton title="Back to home" onPress={() => router.replace('/')}/>
                 </>
             )}
             {isError && (
                 <>
-                    <ThemedText style={styles.errorText}>{error.message}</ThemedText>
-                    <Button title="Retry" onPress={() => router.replace('/')}/>
+                    <ThemedText style={[styles.errorText, {color: errorColor}]}>{error.message}</ThemedText>
+                    <ThemedButton title="Retry" onPress={() => router.replace('/')}/>
                 </>
             )}
         </ThemedView>
@@ -56,7 +59,6 @@ const styles = StyleSheet.create({
         textAlign: 'center',
     },
     errorText: {
-        color: '#ff4444',
         textAlign: 'center',
         fontSize: 16,
     },

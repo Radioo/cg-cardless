@@ -1,26 +1,10 @@
-import {StyleSheet} from 'react-native';
-import {ThemedText} from '@/components/themed-text';
-import {ThemedView} from '@/components/themed-view';
+import {Banner} from '@/components/banner';
 
 export function CardWarning() {
     return (
-        <ThemedView style={styles.warning}>
-            <ThemedText style={styles.warningText}>
-                No card saved. Please go to Settings to add your card.
-            </ThemedText>
-        </ThemedView>
+        <Banner
+            variant="warning"
+            message="No card saved. Please go to Settings to add your card."
+        />
     );
 }
-
-const styles = StyleSheet.create({
-    warning: {
-        backgroundColor: '#FFF3CD',
-        padding: 12,
-        borderRadius: 8,
-        width: '100%',
-    },
-    warningText: {
-        color: '#856404',
-        textAlign: 'center',
-    },
-});

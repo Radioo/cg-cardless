@@ -1,16 +1,31 @@
-import {StyleSheet, Pressable, TextInput, Alert, KeyboardAvoidingView, Platform, ActivityIndicator} from 'react-native';
+import {StyleSheet, Alert, KeyboardAvoidingView, Platform, Pressable} from 'react-native';
+import * as Clipboard from 'expo-clipboard';
+import {Ionicons} from '@expo/vector-icons';
 import {useRouter} from 'expo-router';
 import {useEffect, useState} from 'react';
 import {ThemedText} from '@/components/themed-text';
 import {ThemedView} from '@/components/themed-view';
-import {CardConversionError} from '@/utils/card';
+import {ThemedTextInput} from '@/components/themed-text-input';
+import {ThemedButton} from '@/components/themed-button';
+import {CardConversionError, getDisplayIdFromCardId} from '@/utils/card';
 import {useSavedCard, useSaveCard} from '@/hooks/use-saved-card';
+import {useThemeColor} from '@/hooks/use-theme-color';
+import {Fonts} from '@/constants/theme';
 
 export default function SettingsScreen() {
     const router = useRouter();
     const [card, setCard] = useState('');
     const {data: savedCard} = useSavedCard();
     const saveCardMutation = useSaveCard();
+    const mutedColor = useThemeColor({}, 'muted');
+    const borderColor = useThemeColor({}, 'border');
+
+    let displayId: string | null = null;
+    try {
+        if (savedCard) displayId = getDisplayIdFromCardId(savedCard);
+    } catch {
+        // Card type not recognized — no display ID available
+    }
 
     useEffect(() => {
         if (savedCard) {
@@ -41,39 +56,45 @@ export default function SettingsScreen() {
 
                 <ThemedView style={styles.cardSection}>
                     <ThemedText type="subtitle">Card</ThemedText>
-                    <ThemedText style={styles.hint}>
+                    <ThemedText style={[styles.hint, {color: mutedColor}]}>
                         Enter a Card ID (hex) or Display ID
                     </ThemedText>
-                    <TextInput
-                        style={styles.input}
+                    <ThemedTextInput
                         value={card}
                         onChangeText={setCard}
                         placeholder="Enter your card"
-                        placeholderTextColor="#888"
                         autoCapitalize="characters"
                         autoCorrect={false}
                     />
-                    <Pressable
-                        style={[styles.button, saveCardMutation.isPending && styles.buttonDisabled]}
+                    <ThemedButton
+                        title="Save Card"
                         onPress={handleSave}
                         disabled={saveCardMutation.isPending}
-                    >
-                        {saveCardMutation.isPending ? (
-                            <ActivityIndicator color="#fff" size="small" />
-                        ) : (
-                            <ThemedText style={styles.buttonText}>Save Card</ThemedText>
-                        )}
-                    </Pressable>
+                        loading={saveCardMutation.isPending}
+                    />
                     {savedCard && (
-                        <ThemedText style={styles.savedLabel}>
-                            Saved: {savedCard}
-                        </ThemedText>
+                        <ThemedView style={[styles.cardInfoBox, {borderColor}]}>
+                            <ThemedText style={[styles.cardInfoLabel, {color: mutedColor}]}>Card ID</ThemedText>
+                            <Pressable style={styles.cardInfoRow} onPress={() => Clipboard.setStringAsync(savedCard)}>
+                                <Ionicons name="copy-outline" size={16} color={mutedColor}/>
+                                <ThemedText style={styles.cardInfoValue}>{savedCard}</ThemedText>
+                            </Pressable>
+                            {displayId && (
+                                <>
+                                    <ThemedText style={[styles.cardInfoLabel, {color: mutedColor}]}>Display ID</ThemedText>
+                                    <Pressable style={styles.cardInfoRow} onPress={() => Clipboard.setStringAsync(displayId)}>
+                                        <Ionicons name="copy-outline" size={16} color={mutedColor}/>
+                                        <ThemedText style={styles.cardInfoValue}>
+                                            {displayId.replace(/(.{4})/g, '$1 ').trim()}
+                                        </ThemedText>
+                                    </Pressable>
+                                </>
+                            )}
+                        </ThemedView>
                     )}
                 </ThemedView>
 
-                <Pressable style={styles.backButton} onPress={() => router.back()}>
-                    <ThemedText style={styles.buttonText}>Back to Welcome</ThemedText>
-                </Pressable>
+                <ThemedButton variant="secondary" title="Back" onPress={() => router.back()}/>
             </ThemedView>
         </KeyboardAvoidingView>
     );
@@ -96,39 +117,27 @@ const styles = StyleSheet.create({
         gap: 12,
     },
     hint: {
-        opacity: 0.6,
         fontSize: 13,
     },
-    input: {
+    cardInfoBox: {
         width: '100%',
         borderWidth: 1,
-        borderColor: '#ccc',
-        borderRadius: 8,
-        padding: 12,
-        fontSize: 16,
-        color: '#fff',
+        padding: 16,
+        gap: 4,
     },
-    button: {
-        backgroundColor: '#2196F3',
-        paddingHorizontal: 24,
-        paddingVertical: 12,
-        borderRadius: 8,
-    },
-    buttonDisabled: {
-        opacity: 0.6,
-    },
-    backButton: {
-        backgroundColor: '#666',
-        paddingHorizontal: 24,
-        paddingVertical: 12,
-        borderRadius: 8,
-    },
-    buttonText: {
-        color: '#fff',
+    cardInfoLabel: {
+        fontSize: 12,
         fontWeight: '600',
+        marginTop: 8,
     },
-    savedLabel: {
-        marginTop: 4,
-        opacity: 0.7,
+    cardInfoRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
+    },
+    cardInfoValue: {
+        fontSize: 15,
+        fontFamily: Fonts?.mono,
+        letterSpacing: 1,
     },
 });
