@@ -1,41 +1,34 @@
-import {StyleSheet, Pressable, TextInput, Alert, KeyboardAvoidingView, Platform} from 'react-native';
+import {StyleSheet, Pressable, TextInput, Alert, KeyboardAvoidingView, Platform, ActivityIndicator} from 'react-native';
 import {useRouter} from 'expo-router';
 import {useEffect, useState} from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import {ThemedText} from '@/components/themed-text';
 import {ThemedView} from '@/components/themed-view';
-import {validateAndConvertCard, CardConversionError} from '@/utils/card';
-
-const CARD_STORAGE_KEY = 'saved_card';
+import {CardConversionError} from '@/utils/card';
+import {useSavedCard, useSaveCard} from '@/hooks/use-saved-card';
 
 export default function SettingsScreen() {
     const router = useRouter();
     const [card, setCard] = useState('');
-    const [savedCard, setSavedCard] = useState<string | null>(null);
+    const {data: savedCard} = useSavedCard();
+    const saveCardMutation = useSaveCard();
 
     useEffect(() => {
-        AsyncStorage.getItem(CARD_STORAGE_KEY).then((value) => {
-            if (value !== null) {
-                setCard(value);
-                setSavedCard(value);
-            }
-        });
-    }, []);
-
-    async function saveCard() {
-        let cardId: string;
-        try {
-            cardId = validateAndConvertCard(card);
-        } catch (e) {
-            const message = e instanceof CardConversionError ? e.message : 'Invalid card';
-            Alert.alert('Error', message);
-            return;
+        if (savedCard) {
+            setCard(savedCard);
         }
+    }, [savedCard]);
 
-        await AsyncStorage.setItem(CARD_STORAGE_KEY, cardId);
-        setSavedCard(cardId);
-        setCard(cardId);
-        Alert.alert('Saved', 'Card saved successfully.');
+    function handleSave() {
+        saveCardMutation.mutate(card, {
+            onSuccess: (cardId) => {
+                setCard(cardId);
+                Alert.alert('Saved', 'Card saved successfully.');
+            },
+            onError: (e) => {
+                const message = e instanceof CardConversionError ? e.message : 'Invalid card';
+                Alert.alert('Error', message);
+            },
+        });
     }
 
     return (
@@ -60,8 +53,16 @@ export default function SettingsScreen() {
                         autoCapitalize="characters"
                         autoCorrect={false}
                     />
-                    <Pressable style={styles.button} onPress={saveCard}>
-                        <ThemedText style={styles.buttonText}>Save Card</ThemedText>
+                    <Pressable
+                        style={[styles.button, saveCardMutation.isPending && styles.buttonDisabled]}
+                        onPress={handleSave}
+                        disabled={saveCardMutation.isPending}
+                    >
+                        {saveCardMutation.isPending ? (
+                            <ActivityIndicator color="#fff" size="small" />
+                        ) : (
+                            <ThemedText style={styles.buttonText}>Save Card</ThemedText>
+                        )}
                     </Pressable>
                     {savedCard && (
                         <ThemedText style={styles.savedLabel}>
@@ -112,6 +113,9 @@ const styles = StyleSheet.create({
         paddingHorizontal: 24,
         paddingVertical: 12,
         borderRadius: 8,
+    },
+    buttonDisabled: {
+        opacity: 0.6,
     },
     backButton: {
         backgroundColor: '#666',

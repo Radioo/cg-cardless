@@ -1,27 +1,24 @@
 import {ActivityIndicator, Button, StyleSheet} from 'react-native';
-import {Link, useFocusEffect} from 'expo-router';
+import {Link} from 'expo-router';
 import {ThemedText} from '@/components/themed-text';
 import {ThemedView} from '@/components/themed-view';
-import {useCallback, useState} from "react";
-import {CameraType, CameraView, useCameraPermissions} from "expo-camera";
-import AsyncStorage from '@react-native-async-storage/async-storage';
-
-const CARD_STORAGE_KEY = 'saved_card';
+import {useState} from "react";
+import {BarcodeScanningResult, CameraType, CameraView, useCameraPermissions} from "expo-camera";
+import {useSavedCard} from '@/hooks/use-saved-card';
 
 export default function WelcomeScreen() {
     const [facing, setFacing] = useState<CameraType>('back');
     const [permission, requestPermission] = useCameraPermissions();
-    const [hasCard, setHasCard] = useState<boolean | null>(null);
+    const {data: savedCard, isLoading} = useSavedCard();
+    const [scannedData, setScannedData] = useState<string | null>(null);
 
-    useFocusEffect(
-        useCallback(() => {
-            AsyncStorage.getItem(CARD_STORAGE_KEY).then((value) => {
-                setHasCard(value !== null && value.trim().length > 0);
-            });
-        }, [])
-    );
+    const hasCard = savedCard !== null && savedCard !== undefined && savedCard.trim().length > 0;
 
-    if(!permission) {
+    function handleBarcodeScanned(result: BarcodeScanningResult) {
+        setScannedData(result.data);
+    }
+
+    if(!permission || isLoading) {
         return <ThemedView style={styles.container}>
             <ActivityIndicator/>
         </ThemedView>
@@ -43,14 +40,26 @@ export default function WelcomeScreen() {
     return (
         <ThemedView style={styles.container}>
             <ThemedText type="title">Welcome</ThemedText>
-            {hasCard === false && (
+            {!hasCard && (
                 <ThemedView style={styles.warning}>
                     <ThemedText style={styles.warningText}>
                         No card saved. Please go to Settings to add your card.
                     </ThemedText>
                 </ThemedView>
             )}
-            <CameraView facing={facing} style={styles.cameraView}/>
+            <CameraView
+                facing={facing}
+                style={styles.cameraView}
+                barcodeScannerSettings={{ barcodeTypes: ['qr'] }}
+                onBarcodeScanned={handleBarcodeScanned}
+            />
+            {scannedData && (
+                <ThemedView style={styles.scannedContainer}>
+                    <ThemedText type="subtitle">Scanned QR Code</ThemedText>
+                    <ThemedText style={styles.scannedData} selectable>{scannedData}</ThemedText>
+                    <Button title="Clear" onPress={() => setScannedData(null)} />
+                </ThemedView>
+            )}
             <Button title={"Flip camera"} onPress={toggleCameraFacing}/>
             <Link href="/settings" style={styles.link}>
                 <ThemedText type="link">Go to Settings</ThemedText>
@@ -90,5 +99,18 @@ const styles = StyleSheet.create({
         height: 300,
         borderRadius: 12,
         overflow: 'hidden',
+    },
+    scannedContainer: {
+        width: '100%',
+        padding: 12,
+        borderRadius: 8,
+        borderWidth: 1,
+        borderColor: '#444',
+        gap: 8,
+        alignItems: 'center',
+    },
+    scannedData: {
+        textAlign: 'center',
+        fontSize: 14,
     }
 });
