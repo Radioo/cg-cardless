@@ -1,16 +1,55 @@
-import {ActivityIndicator, Button, StyleSheet} from 'react-native';
-import {useState} from 'react';
+import {ActivityIndicator, Alert, Button, StyleSheet} from 'react-native';
+import {useRef, useState} from 'react';
 import {BarcodeScanningResult, CameraType, CameraView, useCameraPermissions} from 'expo-camera';
+import {useMutation} from '@tanstack/react-query';
 import {ThemedText} from '@/components/themed-text';
-import {ThemedView} from '@/components/themed-view';
 
-export function QrScanner() {
+const QR_PATTERN = /sppass\/[a-zA-Z0-9]{64}$/;
+
+export function QrScanner({cardId}: { cardId: string | null }) {
     const [facing, setFacing] = useState<CameraType>('back');
     const [permission, requestPermission] = useCameraPermissions();
     const [scannedData, setScannedData] = useState<string | null>(null);
+    const [validationError, setValidationError] = useState<string | null>(null);
+    const lastScanTime = useRef(0);
+
+    const {mutate, isPending} = useMutation({
+        mutationFn: async (url: string) => {
+            const res = await fetch(`${url}/${cardId}`);
+            if (!res.ok) throw new Error(`Request failed: ${res.status}`);
+            const json = await res.json();
+            if (json.error) throw new Error(json.error);
+            if (!json.success) throw new Error('Unexpected response');
+            return json;
+        },
+        onSuccess: () => {
+            Alert.alert('Success', 'Request completed successfully.');
+            setScannedData(null);
+            setValidationError(null);
+        },
+        onError: (error: Error) => {
+            Alert.alert('Error', error.message);
+            setScannedData(null);
+        },
+    });
 
     function handleBarcodeScanned(result: BarcodeScanningResult) {
+        if (!cardId) return;
+        if (result.data === scannedData) return;
+
+        const now = Date.now();
+        if (now - lastScanTime.current < 1000) return;
+        lastScanTime.current = now;
+
         setScannedData(result.data);
+        setValidationError(null);
+
+        if (!QR_PATTERN.test(result.data)) {
+            setValidationError('Invalid QR code');
+            return;
+        }
+
+        mutate(result.data);
     }
 
     function toggleCameraFacing() {
@@ -18,7 +57,7 @@ export function QrScanner() {
     }
 
     if (!permission) {
-        return <ActivityIndicator />;
+        return <ActivityIndicator/>;
     }
 
     if (!permission.granted) {
@@ -27,7 +66,7 @@ export function QrScanner() {
                 <ThemedText style={styles.body}>
                     Missing camera permission.
                 </ThemedText>
-                <Button title="Grant permission" onPress={requestPermission} />
+                <Button title="Grant permission" onPress={requestPermission}/>
             </>
         );
     }
@@ -40,14 +79,17 @@ export function QrScanner() {
                 barcodeScannerSettings={{barcodeTypes: ['qr']}}
                 onBarcodeScanned={handleBarcodeScanned}
             />
-            {scannedData && (
-                <ThemedView style={styles.scannedContainer}>
-                    <ThemedText type="subtitle">Scanned QR Code</ThemedText>
-                    <ThemedText style={styles.scannedData} selectable>{scannedData}</ThemedText>
-                    <Button title="Clear" onPress={() => setScannedData(null)} />
-                </ThemedView>
+            {isPending && <ActivityIndicator/>}
+            {validationError && (
+                <ThemedText style={styles.errorText}>{validationError}</ThemedText>
             )}
-            <Button title="Flip camera" onPress={toggleCameraFacing} />
+            {validationError && (
+                <Button title="Clear" onPress={() => {
+                    setScannedData(null);
+                    setValidationError(null);
+                }}/>
+            )}
+            <Button title="Flip camera" onPress={toggleCameraFacing}/>
         </>
     );
 }
@@ -63,16 +105,8 @@ const styles = StyleSheet.create({
         borderRadius: 12,
         overflow: 'hidden',
     },
-    scannedContainer: {
-        width: '100%',
-        padding: 12,
-        borderRadius: 8,
-        borderWidth: 1,
-        borderColor: '#444',
-        gap: 8,
-        alignItems: 'center',
-    },
-    scannedData: {
+    errorText: {
+        color: '#ff4444',
         textAlign: 'center',
         fontSize: 14,
     },

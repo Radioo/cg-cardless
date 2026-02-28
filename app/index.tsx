@@ -21,7 +21,7 @@ export default function WelcomeScreen() {
         <ThemedView style={styles.container}>
             <ThemedText type="title">Welcome</ThemedText>
             {!hasCard && <CardWarning />}
-            <QrScanner />
+            <QrScanner cardId={savedCard ?? null} />
             <Link href="/settings" style={styles.link}>
                 <ThemedText type="link">Go to Settings</ThemedText>
             </Link>
