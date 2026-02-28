@@ -1,7 +1,7 @@
-import {ActivityIndicator, Alert, Button, StyleSheet} from 'react-native';
+import {ActivityIndicator, Button, StyleSheet} from 'react-native';
 import {useRef, useState} from 'react';
 import {BarcodeScanningResult, CameraType, CameraView, useCameraPermissions} from 'expo-camera';
-import {useMutation} from '@tanstack/react-query';
+import {useRouter} from 'expo-router';
 import {ThemedText} from '@/components/themed-text';
 
 const QR_PATTERN = /sppass\/[a-zA-Z0-9]{64}$/;
@@ -9,39 +9,14 @@ const QR_PATTERN = /sppass\/[a-zA-Z0-9]{64}$/;
 export function QrScanner({cardId}: { cardId: string | null }) {
     const [facing, setFacing] = useState<CameraType>('back');
     const [permission, requestPermission] = useCameraPermissions();
-    const [scannedData, setScannedData] = useState<string | null>(null);
     const [validationError, setValidationError] = useState<string | null>(null);
-    const lastScanTime = useRef(0);
-
-    const {mutate, isPending} = useMutation({
-        mutationFn: async (url: string) => {
-            const res = await fetch(`${url}/${cardId}`);
-            if (!res.ok) throw new Error(`Request failed: ${res.status}`);
-            const json = await res.json();
-            if (json.error) throw new Error(json.error);
-            if (!json.success) throw new Error('Unexpected response');
-            return json;
-        },
-        onSuccess: () => {
-            Alert.alert('Success', 'Request completed successfully.');
-            setScannedData(null);
-            setValidationError(null);
-        },
-        onError: (error: Error) => {
-            Alert.alert('Error', error.message);
-            setScannedData(null);
-        },
-    });
+    const navigated = useRef(false);
+    const router = useRouter();
 
     function handleBarcodeScanned(result: BarcodeScanningResult) {
         if (!cardId) return;
-        if (result.data === scannedData) return;
+        if (navigated.current) return;
 
-        const now = Date.now();
-        if (now - lastScanTime.current < 1000) return;
-        lastScanTime.current = now;
-
-        setScannedData(result.data);
         setValidationError(null);
 
         if (!QR_PATTERN.test(result.data)) {
@@ -49,7 +24,8 @@ export function QrScanner({cardId}: { cardId: string | null }) {
             return;
         }
 
-        mutate(result.data);
+        navigated.current = true;
+        router.push({pathname: '/scan-result', params: {url: result.data, cardId}});
     }
 
     function toggleCameraFacing() {
@@ -79,15 +55,11 @@ export function QrScanner({cardId}: { cardId: string | null }) {
                 barcodeScannerSettings={{barcodeTypes: ['qr']}}
                 onBarcodeScanned={handleBarcodeScanned}
             />
-            {isPending && <ActivityIndicator/>}
             {validationError && (
                 <ThemedText style={styles.errorText}>{validationError}</ThemedText>
             )}
             {validationError && (
-                <Button title="Clear" onPress={() => {
-                    setScannedData(null);
-                    setValidationError(null);
-                }}/>
+                <Button title="Clear" onPress={() => setValidationError(null)}/>
             )}
             <Button title="Flip camera" onPress={toggleCameraFacing}/>
         </>
