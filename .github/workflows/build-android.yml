@@ -29,6 +29,8 @@ jobs:
           npm install -g eas-cli
 
       - name: Build APK
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
         run: eas build --platform android --local --profile development --non-interactive --output ./app.apk
 
       - name: Upload APK
