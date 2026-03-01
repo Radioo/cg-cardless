@@ -111,53 +111,29 @@ export default function SettingsScreen() {
                         )}
                     </ThemedView>
 
-                    {Platform.OS === 'android' && (
+                    {Platform.OS === 'android' && felica.isSupported && (
                         <ThemedView style={styles.cardSection}>
                             <ThemedText type="subtitle">FeliCa Emulation</ThemedText>
-                            <ThemedView style={[styles.cardInfoBox, {borderColor}]}>
-                                <ThemedText style={[styles.cardInfoLabel, {color: mutedColor}]}>HCE-F Support</ThemedText>
-                                <ThemedText style={styles.cardInfoValue}>
-                                    {felica.isSupported ? 'Supported' : 'Not Supported'}
+                            {!felica.isNfcEnabled && (
+                                <ThemedText style={styles.errorText}>
+                                    NFC is disabled. Enable it in system settings.
                                 </ThemedText>
-                                <ThemedText style={[styles.cardInfoLabel, {color: mutedColor}]}>NFC</ThemedText>
-                                <ThemedText style={styles.cardInfoValue}>
-                                    {felica.isNfcEnabled ? 'Enabled' : 'Disabled'}
-                                </ThemedText>
-                                <ThemedText style={[styles.cardInfoLabel, {color: mutedColor}]}>Saved Card</ThemedText>
-                                <ThemedText style={styles.cardInfoValue}>
-                                    {!savedCard ? 'None' : felica.isFelica ? 'FeliCa' : 'Not FeliCa'}
-                                </ThemedText>
-                            </ThemedView>
-                            {felica.isSupported && (
-                                <>
-                                    {!felica.isFelica && savedCard && (
-                                        <ThemedText style={styles.errorText}>
-                                            Saved card is not FeliCa. Only FeliCa cards can be emulated.
-                                        </ThemedText>
-                                    )}
-                                    <ThemedText style={[styles.hint, {color: mutedColor}]}>
-                                        System Code (hex, 4XXX, not 4XFF)
-                                    </ThemedText>
-                                    <ThemedTextInput
-                                        value={felica.systemCode}
-                                        onChangeText={felica.setSystemCode}
-                                        placeholder="4000"
-                                        autoCapitalize="characters"
-                                        autoCorrect={false}
-                                        maxLength={4}
-                                    />
-                                    {felica.error && (
-                                        <ThemedText style={styles.errorText}>{felica.error}</ThemedText>
-                                    )}
-                                    <ThemedButton
-                                        title={felica.isActive ? 'Disable Emulation' : 'Enable Emulation'}
-                                        variant={felica.isActive ? 'secondary' : 'primary'}
-                                        onPress={felica.isActive ? felica.disable : felica.enable}
-                                        disabled={felica.loading || !savedCard || (!felica.isActive && !felica.isFelica)}
-                                        loading={felica.loading}
-                                    />
-                                </>
                             )}
+                            {savedCard && !felica.canEmulate && (
+                                <ThemedText style={[styles.hint, {color: mutedColor}]}>
+                                    Card must start with 02FE to be emulated via HCE-F.
+                                </ThemedText>
+                            )}
+                            {felica.error && (
+                                <ThemedText style={styles.errorText}>{felica.error}</ThemedText>
+                            )}
+                            <ThemedButton
+                                title={felica.isActive ? 'Disable Emulation' : 'Enable Emulation'}
+                                variant={felica.isActive ? 'secondary' : 'primary'}
+                                onPress={felica.isActive ? felica.disable : felica.enable}
+                                disabled={felica.loading || !felica.isActive && (!felica.canEmulate || !felica.isNfcEnabled)}
+                                loading={felica.loading}
+                            />
                         </ThemedView>
                     )}
 

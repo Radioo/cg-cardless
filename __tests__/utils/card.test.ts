@@ -9,10 +9,10 @@ import {
 } from '@/utils/card';
 
 describe('generateCardId', () => {
-  it('returns a 16-character hex string with MAGSTRIPE_PREFIX', () => {
+  it('returns a 16-character HCE-F compatible hex string starting with 02FE', () => {
     const id = generateCardId();
     expect(id).toHaveLength(16);
-    expect(id.startsWith(MAGSTRIPE_PREFIX)).toBe(true);
+    expect(id.startsWith('02FE')).toBe(true);
     expect(/^[0-9A-F]{16}$/.test(id)).toBe(true);
   });
 });

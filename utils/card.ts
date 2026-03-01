@@ -293,10 +293,16 @@ export function isFelicaCard(cardId: string): boolean {
     return cardId.startsWith(FELICA_PREFIX) && /^[0-9A-F]{16}$/i.test(cardId);
 }
 
+export function isHceFCompatible(cardId: string): boolean {
+    return /^02FE[0-9A-F]{12}$/i.test(cardId);
+}
+
+const HCEF_PREFIX = '02FE';
+
 export function generateCardId(): string {
     const hex = '0123456789ABCDEF';
-    let id = MAGSTRIPE_PREFIX;
-    for (let i = 0; i < CARD_ID_BODY_LENGTH; i++) id += hex[Math.floor(Math.random() * 16)];
+    let id = HCEF_PREFIX;
+    for (let i = 0; i < CARD_ID_LENGTH - HCEF_PREFIX.length; i++) id += hex[Math.floor(Math.random() * 16)];
     return id;
 }
 
