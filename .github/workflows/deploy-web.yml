@@ -30,10 +30,14 @@ jobs:
         if: steps.cache-modules.outputs.cache-hit != 'true'
         run: npm ci
 
-      - name: Install eas-cli
-        run: npm install -g eas-cli
+      - name: Setup EAS
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
 
-      - name: Deploy
-        env:
-          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
-        run: eas update --platform web --auto
+      - name: Build web app
+        run: npx expo export --platform web
+
+      - name: Deploy web app
+        run: eas deploy --prod
