@@ -43,6 +43,11 @@ export default function ScanResultScreen() {
                     <ThemedText style={[styles.errorText, {color: errorColor}]}>
                         {error instanceof ScanError ? error.message : 'An unexpected error occurred'}
                     </ThemedText>
+                    <ThemedView style={[styles.errorBox, {borderColor: errorColor}]}>
+                        <ThemedText style={[styles.errorDetail, {color: errorColor}]}>
+                            {error?.name}: {error?.message}
+                        </ThemedText>
+                    </ThemedView>
                     <ThemedButton title="Retry" onPress={() => refetch()}/>
                 </>
             )}
@@ -64,5 +69,15 @@ const styles = StyleSheet.create({
     errorText: {
         textAlign: 'center',
         fontSize: 16,
+    },
+    errorBox: {
+        borderWidth: 1,
+        borderRadius: 8,
+        padding: 12,
+        width: '100%',
+    },
+    errorDetail: {
+        fontSize: 13,
+        fontFamily: Platform.OS === 'web' ? 'monospace' : undefined,
     },
 });
