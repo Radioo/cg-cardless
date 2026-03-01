@@ -123,9 +123,18 @@ export default function SettingsScreen() {
                                 <ThemedText style={styles.cardInfoValue}>
                                     {felica.isNfcEnabled ? 'Enabled' : 'Disabled'}
                                 </ThemedText>
+                                <ThemedText style={[styles.cardInfoLabel, {color: mutedColor}]}>Saved Card</ThemedText>
+                                <ThemedText style={styles.cardInfoValue}>
+                                    {!savedCard ? 'None' : felica.isFelica ? 'FeliCa' : 'Not FeliCa'}
+                                </ThemedText>
                             </ThemedView>
                             {felica.isSupported && (
                                 <>
+                                    {!felica.isFelica && savedCard && (
+                                        <ThemedText style={styles.errorText}>
+                                            Saved card is not FeliCa. Only FeliCa cards can be emulated.
+                                        </ThemedText>
+                                    )}
                                     <ThemedText style={[styles.hint, {color: mutedColor}]}>
                                         System Code (hex, 4XXX, not 4XFF)
                                     </ThemedText>
@@ -144,7 +153,7 @@ export default function SettingsScreen() {
                                         title={felica.isActive ? 'Disable Emulation' : 'Enable Emulation'}
                                         variant={felica.isActive ? 'secondary' : 'primary'}
                                         onPress={felica.isActive ? felica.disable : felica.enable}
-                                        disabled={felica.loading || !savedCard}
+                                        disabled={felica.loading || !savedCard || (!felica.isActive && !felica.isFelica)}
                                         loading={felica.loading}
                                     />
                                 </>

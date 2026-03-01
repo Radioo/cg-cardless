@@ -289,6 +289,10 @@ export function getDisplayIdFromCardId(cardId: string): string {
     return displayId;
 }
 
+export function isFelicaCard(cardId: string): boolean {
+    return cardId.startsWith(FELICA_PREFIX) && /^[0-9A-F]{16}$/i.test(cardId);
+}
+
 export function generateCardId(): string {
     const hex = '0123456789ABCDEF';
     let id = MAGSTRIPE_PREFIX;
