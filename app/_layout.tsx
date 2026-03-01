@@ -11,51 +11,51 @@ import { useColorScheme } from '@/hooks/use-color-scheme';
 import { Colors } from '@/constants/theme';
 
 const lightTheme = {
-  ...DefaultTheme,
-  colors: { ...DefaultTheme.colors, background: Colors.light.background, card: Colors.light.background },
+    ...DefaultTheme,
+    colors: { ...DefaultTheme.colors, background: Colors.light.background, card: Colors.light.background },
 };
 
 const darkTheme = {
-  ...DarkTheme,
-  colors: { ...DarkTheme.colors, background: Colors.dark.background, card: Colors.dark.background },
+    ...DarkTheme,
+    colors: { ...DarkTheme.colors, background: Colors.dark.background, card: Colors.dark.background },
 };
 
 export default function RootLayout() {
-  const [queryClient] = useState(() => new QueryClient());
-  const colorScheme = useColorScheme();
-  const theme = colorScheme === 'dark' ? darkTheme : lightTheme;
+    const [queryClient] = useState(() => new QueryClient());
+    const colorScheme = useColorScheme();
+    const theme = colorScheme === 'dark' ? darkTheme : lightTheme;
 
-  useEffect(() => {
-    SystemUI.setBackgroundColorAsync(theme.colors.background);
-  }, [theme.colors.background]);
+    useEffect(() => {
+        SystemUI.setBackgroundColorAsync(theme.colors.background);
+    }, [theme.colors.background]);
 
-  useEffect(() => {
-    if (Platform.OS === 'web') {
-      const origPush = window.history.pushState.bind(window.history);
-      const origReplace = window.history.replaceState.bind(window.history);
-      window.history.pushState = (state: unknown, title: string, _url?: string | URL | null) => origPush(state, title, '/');
-      window.history.replaceState = (state: unknown, title: string, _url?: string | URL | null) => origReplace(state, title, '/');
-      return () => {
-        window.history.pushState = origPush;
-        window.history.replaceState = origReplace;
-      };
-    }
-  }, []);
+    useEffect(() => {
+        if (Platform.OS === 'web') {
+            const origPush = window.history.pushState.bind(window.history);
+            const origReplace = window.history.replaceState.bind(window.history);
+            window.history.pushState = (state: unknown, title: string, _url?: string | URL | null) => origPush(state, title, '/');
+            window.history.replaceState = (state: unknown, title: string, _url?: string | URL | null) => origReplace(state, title, '/');
+            return () => {
+                window.history.pushState = origPush;
+                window.history.replaceState = origReplace;
+            };
+        }
+    }, []);
 
-  return (
-    <QueryClientProvider client={queryClient}>
-      <ThemeProvider value={theme}>
-        <Stack screenOptions={{
-          headerShown: false,
-          contentStyle: { backgroundColor: theme.colors.background },
-          animation: 'fade',
-        }}>
-          <Stack.Screen name="index" />
-          <Stack.Screen name="scan-result" />
-          <Stack.Screen name="settings" />
-        </Stack>
-        <StatusBar style="auto" />
-      </ThemeProvider>
-    </QueryClientProvider>
-  );
+    return (
+        <QueryClientProvider client={queryClient}>
+            <ThemeProvider value={theme}>
+                <Stack screenOptions={{
+                    headerShown: false,
+                    contentStyle: { backgroundColor: theme.colors.background },
+                    animation: 'fade',
+                }}>
+                    <Stack.Screen name="index" />
+                    <Stack.Screen name="scan-result" />
+                    <Stack.Screen name="settings" />
+                </Stack>
+                <StatusBar style="auto" />
+            </ThemeProvider>
+        </QueryClientProvider>
+    );
 }

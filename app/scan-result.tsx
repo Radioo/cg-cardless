@@ -27,7 +27,7 @@ export default function ScanResultScreen() {
             }, 1000);
             return () => clearTimeout(timer);
         }
-    }, [isSuccess]);
+    }, [isSuccess, router]);
 
     return (
         <ThemedView style={styles.container}>

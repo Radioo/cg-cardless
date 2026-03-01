@@ -24,11 +24,15 @@ export default function SettingsScreen() {
     const felica = useFelicaEmulation(savedCard);
 
     const displayId = useMemo(() => {
-        if (!savedCard) return null;
+        if (!savedCard) {
+            return null;
+        }
         try {
             return getDisplayIdFromCardId(savedCard);
         } catch (e) {
-            if (e instanceof CardConversionError) return null;
+            if (e instanceof CardConversionError) {
+                return null;
+            }
             throw e;
         }
     }, [savedCard]);

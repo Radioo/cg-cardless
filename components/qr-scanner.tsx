@@ -22,8 +22,12 @@ export function QrScanner({cardId}: { cardId: string | null }) {
     }, []));
 
     function handleBarcodeScanned(result: BarcodeScanningResult) {
-        if (!cardId) return;
-        if (navigated.current) return;
+        if (!cardId) {
+            return;
+        }
+        if (navigated.current) {
+            return;
+        }
 
         setValidationError(null);
 
