@@ -55,8 +55,19 @@ jobs:
 
       - name: Build
         env:
-          GRADLE_OPTS: "-Dorg.gradle.caching=true -Dorg.gradle.parallel=true"
+          GRADLE_OPTS: "-Dorg.gradle.caching=true -Dorg.gradle.parallel=true -Dorg.gradle.logging.stacktrace=all"
+          EAS_BUILD_RUNNER: "eas-build"
         run: eas build --platform android --local --profile ${{ inputs.profile }} --non-interactive --output ./cg-cardless.apk
+
+      - name: Upload Gradle build reports on failure
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: gradle-build-reports
+          path: |
+            android/build/reports/
+            android/app/build/reports/
+            android/app/build/outputs/logs/
 
       - name: Upload artifact
         uses: actions/upload-artifact@v7

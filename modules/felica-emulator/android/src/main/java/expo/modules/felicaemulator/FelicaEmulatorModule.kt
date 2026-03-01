@@ -14,13 +14,16 @@ class FelicaEmulatorModule : Module() {
     private var currentIdm: String? = null
     private var currentSystemCode: String? = null
 
+    private val context
+        get() = appContext.reactContext
+
     private fun ensureInit() {
         if (nfcAdapter != null) return
-        val context = appContext.reactContext ?: return
-        nfcAdapter = NfcAdapter.getDefaultAdapter(context)
+        val ctx = context ?: return
+        nfcAdapter = NfcAdapter.getDefaultAdapter(ctx)
         val adapter = nfcAdapter ?: return
         nfcFCardEmulation = NfcFCardEmulation.getInstance(adapter)
-        componentName = ComponentName(context, HCEFService::class.java)
+        componentName = ComponentName(ctx, HCEFService::class.java)
     }
 
     override fun definition() = ModuleDefinition {
@@ -39,45 +42,59 @@ class FelicaEmulatorModule : Module() {
         Function("getStatus") {
             mapOf(
                 "isEmulationActive" to isEmulationActive,
-                "currentIdm" to currentIdm,
-                "currentSystemCode" to currentSystemCode
+                "currentIdm" to (currentIdm ?: ""),
+                "currentSystemCode" to (currentSystemCode ?: "")
             )
         }
 
         AsyncFunction("setIdm") { idm: String ->
             ensureInit()
-            val emulation = nfcFCardEmulation ?: return@AsyncFunction false
-            val cn = componentName ?: return@AsyncFunction false
-            val result = emulation.setNfcid2ForService(cn, idm.uppercase())
-            if (result) currentIdm = idm.uppercase()
-            result
+            val emulation = nfcFCardEmulation
+            val cn = componentName
+            if (emulation == null || cn == null) {
+                false
+            } else {
+                val result = emulation.setNfcid2ForService(cn, idm.uppercase())
+                if (result) currentIdm = idm.uppercase()
+                result
+            }
         }
 
         AsyncFunction("setSystemCode") { code: String ->
             ensureInit()
-            val emulation = nfcFCardEmulation ?: return@AsyncFunction false
-            val cn = componentName ?: return@AsyncFunction false
-            val result = emulation.registerSystemCodeForService(cn, code.uppercase())
-            if (result) currentSystemCode = code.uppercase()
-            result
+            val emulation = nfcFCardEmulation
+            val cn = componentName
+            if (emulation == null || cn == null) {
+                false
+            } else {
+                val result = emulation.registerSystemCodeForService(cn, code.uppercase())
+                if (result) currentSystemCode = code.uppercase()
+                result
+            }
         }
 
         AsyncFunction("enableEmulation") {
             ensureInit()
-            val emulation = nfcFCardEmulation ?: return@AsyncFunction false
-            val cn = componentName ?: return@AsyncFunction false
-            val activity = appContext.currentActivity ?: return@AsyncFunction false
-            val result = emulation.enableService(activity, cn)
-            if (result) isEmulationActive = true
-            result
+            val emulation = nfcFCardEmulation
+            val cn = componentName
+            val activity = appContext.currentActivity
+            if (emulation == null || cn == null || activity == null) {
+                false
+            } else {
+                val result = emulation.enableService(activity, cn)
+                if (result) isEmulationActive = true
+                result
+            }
         }
 
         AsyncFunction("disableEmulation") {
             ensureInit()
-            val emulation = nfcFCardEmulation ?: return@AsyncFunction
-            val activity = appContext.currentActivity ?: return@AsyncFunction
-            emulation.disableService(activity)
-            isEmulationActive = false
+            val emulation = nfcFCardEmulation
+            val activity = appContext.currentActivity
+            if (emulation != null && activity != null) {
+                emulation.disableService(activity)
+                isEmulationActive = false
+            }
         }
     }
 }
