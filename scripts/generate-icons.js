@@ -52,11 +52,11 @@ async function main() {
   console.log(`Generating icons from ${SOURCE_SVG}...`);
 
   // --- Android Adaptive Icon ---
-  // Foreground: logo in theme color, padded for safe zone (inner 61% of 512 = ~312px)
+  // Foreground: logo in theme color, padded well within safe zone (inner ~50% of 512)
   await renderIcon({
     color: LOGO_COLOR,
     canvasSize: 512,
-    contentSize: 312,
+    contentSize: 260,
     bgColor: null,
     output: "android-icon-foreground.png",
   });
@@ -73,7 +73,7 @@ async function main() {
   await renderIcon({
     color: "#000000",
     canvasSize: 512,
-    contentSize: 312,
+    contentSize: 260,
     bgColor: null,
     output: "android-icon-monochrome.png",
   });
