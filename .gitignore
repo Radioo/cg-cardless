@@ -44,3 +44,5 @@ app-example
 /coverage/
 /.desloppify/
 /.claude/
+/test-results/
+/playwright-report/
