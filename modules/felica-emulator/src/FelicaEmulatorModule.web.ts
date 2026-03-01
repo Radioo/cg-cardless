@@ -1,5 +1,3 @@
-import type {FelicaStatus} from './FelicaEmulatorModule';
-
 export default {
     isHceFSupported(): boolean {
         return false;
@@ -7,8 +5,8 @@ export default {
     isNfcEnabled(): boolean {
         return false;
     },
-    getStatus(): FelicaStatus {
-        return {isEmulationActive: false, currentIdm: null, currentSystemCode: null};
+    getStatus() {
+        return {isEmulationActive: false, currentIdm: null, currentSystemCode: null} as const;
     },
     async setIdm(_idm: string): Promise<boolean> {
         return false;

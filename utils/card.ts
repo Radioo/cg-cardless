@@ -12,10 +12,9 @@ const DISPLAY_ID_ALPHABET_MAP: Record<string, number> = {
 const TYPE_ICODE_SLI = 1;
 const TYPE_FELICA = 2;
 
-export const MAGSTRIPE_PREFIX = 'E004';
+const MAGSTRIPE_PREFIX = 'E004';
 const FELICA_PREFIX = '0';
 const CARD_ID_LENGTH = 16;
-const CARD_ID_BODY_LENGTH = CARD_ID_LENGTH - MAGSTRIPE_PREFIX.length;
 
 const BITS_PER_SYMBOL = 5;
 const BITS_PER_BYTE = 8;
@@ -287,10 +286,6 @@ export function getDisplayIdFromCardId(cardId: string): string {
     }
 
     return displayId;
-}
-
-export function isFelicaCard(cardId: string): boolean {
-    return cardId.startsWith(FELICA_PREFIX) && /^[0-9A-F]{16}$/i.test(cardId);
 }
 
 export function isHceFCompatible(cardId: string): boolean {

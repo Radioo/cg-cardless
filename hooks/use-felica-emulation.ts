@@ -18,7 +18,9 @@ export function useFelicaEmulation(savedCard: string | null | undefined) {
     );
 
     useEffect(() => {
-        if (Platform.OS !== 'android') return;
+        if (Platform.OS !== 'android') {
+            return;
+        }
         setIsSupported(FelicaEmulator.isHceFSupported());
         setIsNfcEnabled(FelicaEmulator.isNfcEnabled());
         const status = FelicaEmulator.getStatus();
@@ -34,13 +36,19 @@ export function useFelicaEmulation(savedCard: string | null | undefined) {
         setError(null);
         try {
             const idmOk = await FelicaEmulator.setIdm(savedCard.toUpperCase());
-            if (!idmOk) throw new Error('Failed to set IDm');
+            if (!idmOk) {
+                throw new Error('Failed to set IDm');
+            }
 
             const scOk = await FelicaEmulator.setSystemCode(SYSTEM_CODE);
-            if (!scOk) throw new Error('Failed to set system code');
+            if (!scOk) {
+                throw new Error('Failed to set system code');
+            }
 
             const enabled = await FelicaEmulator.enableEmulation();
-            if (!enabled) throw new Error('Failed to enable emulation');
+            if (!enabled) {
+                throw new Error('Failed to enable emulation');
+            }
 
             setIsActive(true);
         } catch (e) {

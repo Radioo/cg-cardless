@@ -1,6 +1,6 @@
 import {requireNativeModule} from 'expo-modules-core';
 
-export type FelicaStatus = {
+type FelicaStatus = {
     isEmulationActive: boolean;
     currentIdm: string | null;
     currentSystemCode: string | null;

@@ -3,8 +3,15 @@ const { defineConfig } = require('eslint/config');
 const expoConfig = require('eslint-config-expo/flat');
 
 module.exports = defineConfig([
-  expoConfig,
-  {
-    ignores: ['dist/*'],
-  },
+    expoConfig,
+    {
+        ignores: ['dist/*'],
+    },
+    {
+        rules: {
+            curly: 'error',
+            'brace-style': ['error', '1tbs', { allowSingleLine: false }],
+            indent: ['error', 4],
+        },
+    },
 ]);

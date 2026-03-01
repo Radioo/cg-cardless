@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, act } from '@testing-library/react-native';
+import { render } from '@testing-library/react-native';
 import { useLocalSearchParams } from 'expo-router';
 import ScanResultScreen from '@/app/scan-result';
 import { createWrapper } from '../helpers';

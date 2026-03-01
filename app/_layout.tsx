@@ -33,8 +33,8 @@ export default function RootLayout() {
     if (Platform.OS === 'web') {
       const origPush = window.history.pushState.bind(window.history);
       const origReplace = window.history.replaceState.bind(window.history);
-      window.history.pushState = (state: any, title: string, _url?: string | URL | null) => origPush(state, title, '/');
-      window.history.replaceState = (state: any, title: string, _url?: string | URL | null) => origReplace(state, title, '/');
+      window.history.pushState = (state: unknown, title: string, _url?: string | URL | null) => origPush(state, title, '/');
+      window.history.replaceState = (state: unknown, title: string, _url?: string | URL | null) => origReplace(state, title, '/');
       return () => {
         window.history.pushState = origPush;
         window.history.replaceState = origReplace;

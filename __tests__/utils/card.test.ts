@@ -5,7 +5,6 @@ import {
   getDisplayIdFromCardId,
   validateAndConvertCard,
   CardConversionError,
-  MAGSTRIPE_PREFIX,
 } from '@/utils/card';
 
 describe('generateCardId', () => {

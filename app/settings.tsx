@@ -20,6 +20,7 @@ export default function SettingsScreen() {
     const saveCardMutation = useSaveCard();
     const mutedColor = useThemeColor('muted');
     const borderColor = useThemeColor('border');
+    const errorColor = useThemeColor('error');
     const felica = useFelicaEmulation(savedCard);
 
     const displayId = useMemo(() => {
@@ -115,7 +116,7 @@ export default function SettingsScreen() {
                         <ThemedView style={styles.cardSection}>
                             <ThemedText type="subtitle">FeliCa Emulation</ThemedText>
                             {!felica.isNfcEnabled && (
-                                <ThemedText style={styles.errorText}>
+                                <ThemedText style={[styles.errorText, {color: errorColor}]}>
                                     NFC is disabled. Enable it in system settings.
                                 </ThemedText>
                             )}
@@ -125,7 +126,7 @@ export default function SettingsScreen() {
                                 </ThemedText>
                             )}
                             {felica.error && (
-                                <ThemedText style={styles.errorText}>{felica.error}</ThemedText>
+                                <ThemedText style={[styles.errorText, {color: errorColor}]}>{felica.error}</ThemedText>
                             )}
                             <ThemedButton
                                 title={felica.isActive ? 'Disable Emulation' : 'Enable Emulation'}
@@ -198,6 +199,5 @@ const styles = StyleSheet.create({
     },
     errorText: {
         fontSize: 13,
-        color: '#e53e3e',
     },
 });
