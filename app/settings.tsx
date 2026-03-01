@@ -1,4 +1,4 @@
-import {StyleSheet, Alert, KeyboardAvoidingView, Platform, Pressable} from 'react-native';
+import {StyleSheet, Alert, KeyboardAvoidingView, Platform, Pressable, ScrollView} from 'react-native';
 import * as Clipboard from 'expo-clipboard';
 import {Ionicons} from '@expo/vector-icons';
 import {useRouter} from 'expo-router';
@@ -9,6 +9,7 @@ import {ThemedTextInput} from '@/components/themed-text-input';
 import {ThemedButton} from '@/components/themed-button';
 import {CardConversionError, generateCardId, getDisplayIdFromCardId} from '@/utils/card';
 import {useSavedCard, useSaveCard} from '@/hooks/use-saved-card';
+import {useFelicaEmulation} from '@/hooks/use-felica-emulation';
 import {useThemeColor} from '@/hooks/use-theme-color';
 import {Fonts} from '@/constants/fonts';
 
@@ -19,6 +20,7 @@ export default function SettingsScreen() {
     const saveCardMutation = useSaveCard();
     const mutedColor = useThemeColor('muted');
     const borderColor = useThemeColor('border');
+    const felica = useFelicaEmulation(savedCard);
 
     const displayId = useMemo(() => {
         if (!savedCard) return null;
@@ -58,58 +60,101 @@ export default function SettingsScreen() {
             style={styles.flex}
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         >
-            <ThemedView style={styles.container}>
-                <ThemedText type="title">Settings</ThemedText>
+            <ScrollView contentContainerStyle={styles.scrollContent}>
+                <ThemedView style={styles.container}>
+                    <ThemedText type="title">Settings</ThemedText>
 
-                <ThemedView style={styles.cardSection}>
-                    <ThemedText type="subtitle">Card</ThemedText>
-                    <ThemedText style={[styles.hint, {color: mutedColor}]}>
-                        Enter a Card ID (hex) or Display ID
-                    </ThemedText>
-                    <ThemedTextInput
-                        value={card}
-                        onChangeText={setCard}
-                        placeholder="Enter your card"
-                        autoCapitalize="characters"
-                        autoCorrect={false}
-                    />
-                    <ThemedView style={styles.buttonRow}>
-                        <ThemedButton
-                            title="Generate Card"
-                            variant="secondary"
-                            onPress={handleGenerate}
+                    <ThemedView style={styles.cardSection}>
+                        <ThemedText type="subtitle">Card</ThemedText>
+                        <ThemedText style={[styles.hint, {color: mutedColor}]}>
+                            Enter a Card ID (hex) or Display ID
+                        </ThemedText>
+                        <ThemedTextInput
+                            value={card}
+                            onChangeText={setCard}
+                            placeholder="Enter your card"
+                            autoCapitalize="characters"
+                            autoCorrect={false}
                         />
-                        <ThemedButton
-                            title="Save Card"
-                            onPress={handleSave}
-                            disabled={saveCardMutation.isPending}
-                            loading={saveCardMutation.isPending}
-                        />
+                        <ThemedView style={styles.buttonRow}>
+                            <ThemedButton
+                                title="Generate Card"
+                                variant="secondary"
+                                onPress={handleGenerate}
+                            />
+                            <ThemedButton
+                                title="Save Card"
+                                onPress={handleSave}
+                                disabled={saveCardMutation.isPending}
+                                loading={saveCardMutation.isPending}
+                            />
+                        </ThemedView>
+                        {savedCard && (
+                            <ThemedView style={[styles.cardInfoBox, {borderColor}]}>
+                                <ThemedText style={[styles.cardInfoLabel, {color: mutedColor}]}>Card ID</ThemedText>
+                                <Pressable style={styles.cardInfoRow} onPress={() => Clipboard.setStringAsync(savedCard)}>
+                                    <Ionicons name="copy-outline" size={16} color={mutedColor}/>
+                                    <ThemedText style={styles.cardInfoValue}>{savedCard}</ThemedText>
+                                </Pressable>
+                                {displayId && (
+                                    <>
+                                        <ThemedText style={[styles.cardInfoLabel, {color: mutedColor}]}>Display ID</ThemedText>
+                                        <Pressable style={styles.cardInfoRow} onPress={() => Clipboard.setStringAsync(displayId)}>
+                                            <Ionicons name="copy-outline" size={16} color={mutedColor}/>
+                                            <ThemedText style={styles.cardInfoValue}>
+                                                {displayId.replace(/(.{4})/g, '$1 ').trim()}
+                                            </ThemedText>
+                                        </Pressable>
+                                    </>
+                                )}
+                            </ThemedView>
+                        )}
                     </ThemedView>
-                    {savedCard && (
-                        <ThemedView style={[styles.cardInfoBox, {borderColor}]}>
-                            <ThemedText style={[styles.cardInfoLabel, {color: mutedColor}]}>Card ID</ThemedText>
-                            <Pressable style={styles.cardInfoRow} onPress={() => Clipboard.setStringAsync(savedCard)}>
-                                <Ionicons name="copy-outline" size={16} color={mutedColor}/>
-                                <ThemedText style={styles.cardInfoValue}>{savedCard}</ThemedText>
-                            </Pressable>
-                            {displayId && (
+
+                    {Platform.OS === 'android' && (
+                        <ThemedView style={styles.cardSection}>
+                            <ThemedText type="subtitle">FeliCa Emulation</ThemedText>
+                            <ThemedView style={[styles.cardInfoBox, {borderColor}]}>
+                                <ThemedText style={[styles.cardInfoLabel, {color: mutedColor}]}>HCE-F Support</ThemedText>
+                                <ThemedText style={styles.cardInfoValue}>
+                                    {felica.isSupported ? 'Supported' : 'Not Supported'}
+                                </ThemedText>
+                                <ThemedText style={[styles.cardInfoLabel, {color: mutedColor}]}>NFC</ThemedText>
+                                <ThemedText style={styles.cardInfoValue}>
+                                    {felica.isNfcEnabled ? 'Enabled' : 'Disabled'}
+                                </ThemedText>
+                            </ThemedView>
+                            {felica.isSupported && (
                                 <>
-                                    <ThemedText style={[styles.cardInfoLabel, {color: mutedColor}]}>Display ID</ThemedText>
-                                    <Pressable style={styles.cardInfoRow} onPress={() => Clipboard.setStringAsync(displayId)}>
-                                        <Ionicons name="copy-outline" size={16} color={mutedColor}/>
-                                        <ThemedText style={styles.cardInfoValue}>
-                                            {displayId.replace(/(.{4})/g, '$1 ').trim()}
-                                        </ThemedText>
-                                    </Pressable>
+                                    <ThemedText style={[styles.hint, {color: mutedColor}]}>
+                                        System Code (hex, 4XXX, not 4XFF)
+                                    </ThemedText>
+                                    <ThemedTextInput
+                                        value={felica.systemCode}
+                                        onChangeText={felica.setSystemCode}
+                                        placeholder="4000"
+                                        autoCapitalize="characters"
+                                        autoCorrect={false}
+                                        maxLength={4}
+                                    />
+                                    {felica.error && (
+                                        <ThemedText style={styles.errorText}>{felica.error}</ThemedText>
+                                    )}
+                                    <ThemedButton
+                                        title={felica.isActive ? 'Disable Emulation' : 'Enable Emulation'}
+                                        variant={felica.isActive ? 'secondary' : 'primary'}
+                                        onPress={felica.isActive ? felica.disable : felica.enable}
+                                        disabled={felica.loading || !savedCard}
+                                        loading={felica.loading}
+                                    />
                                 </>
                             )}
                         </ThemedView>
                     )}
-                </ThemedView>
 
-                <ThemedButton variant="secondary" title="Back" onPress={() => router.back()}/>
-            </ThemedView>
+                    <ThemedButton variant="secondary" title="Back" onPress={() => router.back()}/>
+                </ThemedView>
+            </ScrollView>
         </KeyboardAvoidingView>
     );
 }
@@ -117,6 +162,9 @@ export default function SettingsScreen() {
 const styles = StyleSheet.create({
     flex: {
         flex: 1,
+    },
+    scrollContent: {
+        flexGrow: 1,
     },
     container: {
         flex: 1,
@@ -157,5 +205,9 @@ const styles = StyleSheet.create({
         fontSize: 15,
         fontFamily: Fonts.mono,
         letterSpacing: 1,
+    },
+    errorText: {
+        fontSize: 13,
+        color: '#e53e3e',
     },
 });

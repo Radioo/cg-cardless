@@ -48,7 +48,8 @@
           "recordAudioAndroid": false,
           "barcodeScannerEnabled": false
         }
-      ]
+      ],
+      "./modules/felica-emulator/app.plugin.js"
     ],
     "experiments": {
       "typedRoutes": true,

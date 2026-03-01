@@ -18,33 +18,4 @@ Built with [Expo](https://expo.dev) and React Native.
    npm start
    ```
 
-## Project structure
-
-| Directory | Purpose |
-|-----------|---------|
-| `app/` | Screen routes (Expo Router, default exports) |
-| `components/` | Reusable UI components (named exports) |
-| `hooks/` | Custom React hooks |
-| `utils/` | Card ID conversion and validation logic |
-| `constants/` | Theme colors and font definitions |
-
-### Routes
-
-- `/` - Home screen with QR scanner and card status
-- `/settings` - Card management (enter, generate, save)
-- `/scan-result` - Displays result after scanning a QR code
-
-## Scripts
-
-| Command | Description |
-|---------|-------------|
-| `npm start` | Start the Expo development server |
-| `npm run android` | Start on Android emulator |
-| `npm run ios` | Start on iOS simulator |
-| `npm run web` | Start in web browser |
-| `npm run lint` | Run ESLint |
-| `npm test` | Run tests with Jest |
-| `npm run test:watch` | Run tests in watch mode |
-| `npm run test:ci` | Run tests with coverage (CI) |
-
 ![Deslopify scorecard](scorecard.png)

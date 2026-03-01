@@ -55,3 +55,20 @@ jest.mock('@react-navigation/native', () => ({
   ...jest.requireActual('@react-navigation/native'),
   useFocusEffect: jest.fn((cb) => cb()),
 }));
+
+// felica-emulator
+jest.mock('@/modules/felica-emulator', () => ({
+  FelicaEmulator: {
+    isHceFSupported: jest.fn(() => false),
+    isNfcEnabled: jest.fn(() => false),
+    getStatus: jest.fn(() => ({
+      isEmulationActive: false,
+      currentIdm: null,
+      currentSystemCode: null,
+    })),
+    setIdm: jest.fn(() => Promise.resolve(true)),
+    setSystemCode: jest.fn(() => Promise.resolve(true)),
+    enableEmulation: jest.fn(() => Promise.resolve(true)),
+    disableEmulation: jest.fn(() => Promise.resolve()),
+  },
+}));
