@@ -3,6 +3,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import * as SystemUI from 'expo-system-ui';
+import { Platform } from 'react-native';
 import { useEffect, useState } from 'react';
 import 'react-native-reanimated';
 
@@ -27,6 +28,19 @@ export default function RootLayout() {
   useEffect(() => {
     SystemUI.setBackgroundColorAsync(theme.colors.background);
   }, [theme.colors.background]);
+
+  useEffect(() => {
+    if (Platform.OS === 'web') {
+      const origPush = window.history.pushState.bind(window.history);
+      const origReplace = window.history.replaceState.bind(window.history);
+      window.history.pushState = (state: any, title: string, _url?: string | URL | null) => origPush(state, title, '/');
+      window.history.replaceState = (state: any, title: string, _url?: string | URL | null) => origReplace(state, title, '/');
+      return () => {
+        window.history.pushState = origPush;
+        window.history.replaceState = origReplace;
+      };
+    }
+  }, []);
 
   return (
     <QueryClientProvider client={queryClient}>
