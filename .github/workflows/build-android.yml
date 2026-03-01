@@ -54,11 +54,11 @@ jobs:
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
           GRADLE_OPTS: "-Dorg.gradle.caching=true -Dorg.gradle.parallel=true"
-        run: eas build --platform android --local --profile ${{ inputs.profile }} --non-interactive --output ./app.apk
+        run: eas build --platform android --local --profile ${{ inputs.profile }} --non-interactive --output ./cg-cardless.apk
 
       - name: Upload artifact
         uses: actions/upload-artifact@v7
         with:
           archive: false
           name: android-${{ inputs.profile }}
-          path: ./app.apk
+          path: ./cg-cardless.apk
