@@ -134,6 +134,11 @@ export default function SettingsScreen() {
                                 disabled={felica.loading || !felica.isActive && (!felica.canEmulate || !felica.isNfcEnabled)}
                                 loading={felica.loading}
                             />
+                            {felica.isActive && (
+                                <ThemedText style={[styles.hint, {color: mutedColor}]}>
+                                    Keep the app open while scanning. Emulation stops when the app is closed or backgrounded.
+                                </ThemedText>
+                            )}
                         </ThemedView>
                     )}
 
