@@ -40,4 +40,4 @@ jobs:
         run: npx expo export --platform web
 
       - name: Deploy web app
-        run: eas deploy --prod
+        run: eas deploy --prod --non-interactive
