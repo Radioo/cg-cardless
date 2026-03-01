@@ -1,4 +1,5 @@
-import {ActivityIndicator, StyleSheet} from 'react-native';
+import {useEffect} from 'react';
+import {ActivityIndicator, BackHandler, Platform, StyleSheet} from 'react-native';
 import {useLocalSearchParams, useRouter} from 'expo-router';
 import {ThemedText} from '@/components/themed-text';
 import {ThemedView} from '@/components/themed-view';
@@ -13,6 +14,21 @@ export default function ScanResultScreen() {
     const errorColor = useThemeColor('error');
     const {isPending, isSuccess, isError, error, refetch} = useSubmitScan(url, cardId);
 
+    useEffect(() => {
+        if (isSuccess) {
+            const timer = setTimeout(() => {
+                if (Platform.OS === 'android') {
+                    BackHandler.exitApp();
+                } else if (Platform.OS === 'web') {
+                    window.close();
+                } else {
+                    router.replace('/');
+                }
+            }, 1000);
+            return () => clearTimeout(timer);
+        }
+    }, [isSuccess]);
+
     return (
         <ThemedView style={styles.container}>
             {isPending && <ActivityIndicator size="large"/>}
@@ -20,7 +36,6 @@ export default function ScanResultScreen() {
                 <>
                     <ThemedText type="title">Success</ThemedText>
                     <ThemedText style={styles.body}>Request completed successfully.</ThemedText>
-                    <ThemedButton title="Back to home" onPress={() => router.replace('/')}/>
                 </>
             )}
             {isError && (
