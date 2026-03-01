@@ -19,7 +19,7 @@ describe('useSubmitScan', () => {
         );
 
         await waitFor(() => expect(result.current.isSuccess).toBe(true));
-        expect(global.fetch).toHaveBeenCalledWith('https://example.com/api/ABC123');
+        expect(global.fetch).toHaveBeenCalledWith('https://example.com/api/ABC123', undefined);
     });
 
     it('returns error when params are missing', async () => {

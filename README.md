@@ -1,6 +1,6 @@
 # CG Cardless
 
-A mobile app for cardless access using QR code scanning. Scan venue QR codes, link them with your card ID, and complete entry without a physical card.
+Helper app for cardless login in supported games. Set your card ID and just scan the code.
 
 Built with [Expo](https://expo.dev) and React Native.
 

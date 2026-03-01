@@ -13,12 +13,12 @@ describe('submitScan', () => {
   it('returns json on success', async () => {
     const result = await submitScan('https://example.com/api', 'ABC123');
     expect(result).toEqual({ success: true });
-    expect(global.fetch).toHaveBeenCalledWith('https://example.com/api/ABC123');
+    expect(global.fetch).toHaveBeenCalledWith('https://example.com/api/ABC123', undefined);
   });
 
   it('appends cardId without double slash', async () => {
     await submitScan('https://example.com/api/', 'ABC123');
-    expect(global.fetch).toHaveBeenCalledWith('https://example.com/api/ABC123');
+    expect(global.fetch).toHaveBeenCalledWith('https://example.com/api/ABC123', undefined);
   });
 
   it('throws ScanError on HTTP failure', async () => {

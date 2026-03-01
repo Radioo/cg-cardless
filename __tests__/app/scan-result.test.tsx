@@ -1,5 +1,5 @@
 import React from 'react';
-import { render } from '@testing-library/react-native';
+import { render, act } from '@testing-library/react-native';
 import { useLocalSearchParams } from 'expo-router';
 import ScanResultScreen from '@/app/scan-result';
 import { createWrapper } from '../helpers';
@@ -7,6 +7,7 @@ import { createWrapper } from '../helpers';
 const TEST_PARAMS = { url: 'https://example.com/api', cardId: 'ABC123' };
 
 beforeEach(() => {
+  jest.useFakeTimers();
   jest.clearAllMocks();
   (useLocalSearchParams as jest.Mock).mockReturnValue(TEST_PARAMS);
   global.fetch = jest.fn(() =>
@@ -15,6 +16,10 @@ beforeEach(() => {
       json: () => Promise.resolve({ success: true }),
     }),
   ) as jest.Mock;
+});
+
+afterEach(() => {
+  jest.useRealTimers();
 });
 
 describe('ScanResultScreen', () => {
@@ -33,10 +38,11 @@ describe('ScanResultScreen', () => {
       json: () => Promise.resolve({}),
     });
 
-    const { findByText } = render(<ScanResultScreen />, {
+    const { findAllByText } = render(<ScanResultScreen />, {
       wrapper: createWrapper(),
     });
 
-    expect(await findByText(/Request failed/)).toBeTruthy();
+    const matches = await findAllByText(/Request failed: 500/);
+    expect(matches.length).toBeGreaterThan(0);
   });
 });
