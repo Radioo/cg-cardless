@@ -12,16 +12,24 @@ const DISPLAY_ID_ALPHABET_MAP: Record<string, number> = {
 const TYPE_ICODE_SLI = 1;
 const TYPE_FELICA = 2;
 
-const MAGSTRIPE_PREFIX = 'E004';
+export const MAGSTRIPE_PREFIX = 'E004';
 const FELICA_PREFIX = '0';
+const CARD_ID_LENGTH = 16;
+const CARD_ID_BODY_LENGTH = CARD_ID_LENGTH - MAGSTRIPE_PREFIX.length;
 
+const BITS_PER_SYMBOL = 5;
+const BITS_PER_BYTE = 8;
+const SYMBOL_MASK = (1 << BITS_PER_SYMBOL) - 1; // 0x1F (31)
+const CHECKSUM_DATA_LENGTH = 15;
+
+// Public key for card display ID encoding (part of the published card specification)
 const CARD_DES_KEY_BYTES = [
     0x7e, 0x92, 0x4e, 0xd8, 0xd8, 0x84, 0x64, 0xc6,
     0x5c, 0xb2, 0xde, 0xea, 0xb0, 0xb0, 0xb0, 0xca,
     0x9a, 0xca, 0x90, 0xc2, 0xb2, 0xe0, 0xf2, 0x42,
 ];
 
-export type CardFormatType = 'display_id' | 'card_id';
+type CardFormatType = 'display_id' | 'card_id';
 
 export class CardConversionError extends Error {
     constructor(message: string) {
@@ -51,70 +59,74 @@ function wordArrayToBytes(wa: CryptoJS.lib.WordArray): number[] {
     return bytes;
 }
 
-function getChecksum(bytes: number[]): number {
+function getChecksum(symbols: number[]): number {
     let checksum = 0;
-    for (let i = 0; i <= 14; i++) {
-        checksum += bytes[i] * ((i % 3) + 1);
+    for (let i = 0; i < CHECKSUM_DATA_LENGTH; i++) {
+        checksum += symbols[i] * ((i % 3) + 1);
     }
-    while (checksum > 31) {
-        checksum = (checksum >> 5) + (checksum & 31);
+    // Reduce to single base-32 digit via repeated digit-sum
+    while (checksum > SYMBOL_MASK) {
+        checksum = (checksum >> BITS_PER_SYMBOL) + (checksum & SYMBOL_MASK);
     }
     return checksum;
 }
 
-function pack5Bit(bytes: number[]): number[] {
+/** Packs an array of 5-bit symbols into 8-bit bytes. */
+function pack5Bit(symbols: number[]): number[] {
     const packed: number[] = [];
     let idx = 0;
     let bits = 0;
+    const boundary = BITS_PER_BYTE - BITS_PER_SYMBOL; // 3
 
-    for (const byte of bytes) {
+    for (const symbol of symbols) {
         if (packed[idx] === undefined) packed[idx] = 0;
 
-        if (bits <= 3) {
-            packed[idx] |= byte << (3 - bits);
-            if (bits === 3) {
+        if (bits <= boundary) {
+            packed[idx] |= symbol << (boundary - bits);
+            if (bits === boundary) {
                 idx++;
                 bits = 0;
             } else {
-                bits += 5;
+                bits += BITS_PER_SYMBOL;
             }
         } else {
-            packed[idx] |= byte >> (bits - 3);
+            packed[idx] |= symbol >> (bits - boundary);
             idx++;
-            packed[idx] = (byte & (31 >> (5 - (bits - 3)))) << (8 - (bits - 3));
-            bits -= 3;
+            packed[idx] = (symbol & (SYMBOL_MASK >> (BITS_PER_SYMBOL - (bits - boundary)))) << (BITS_PER_BYTE - (bits - boundary));
+            bits -= boundary;
         }
     }
 
     return packed;
 }
 
+/** Unpacks 8-bit bytes into an array of 5-bit symbols. */
 function unpack5Bit(packed: number[]): number[] {
     const unpacked: number[] = [];
     let unpackedBytes = 0;
     let unpackedBits = 0;
 
     for (const byte of packed) {
-        let remainingBits = 8;
+        let remainingBits = BITS_PER_BYTE;
 
         while (remainingBits > 0) {
-            const freeBits = 5 - unpackedBits;
+            const freeBits = BITS_PER_SYMBOL - unpackedBits;
 
             if (unpacked[unpackedBytes] === undefined) {
                 unpacked[unpackedBytes] = 0;
             }
 
             if (remainingBits >= freeBits) {
-                unpacked[unpackedBytes++] |= (byte >> (remainingBits - 5 + unpackedBits)) & (31 >> (5 - freeBits));
+                unpacked[unpackedBytes++] |= (byte >> (remainingBits - BITS_PER_SYMBOL + unpackedBits)) & (SYMBOL_MASK >> (BITS_PER_SYMBOL - freeBits));
                 unpackedBits = 0;
                 remainingBits -= freeBits;
             } else {
-                const valueMasked = byte & (0xFF >> (8 - remainingBits));
-                unpacked[unpackedBytes] |= valueMasked << (5 - unpackedBits - remainingBits);
+                const valueMasked = byte & (0xFF >> (BITS_PER_BYTE - remainingBits));
+                unpacked[unpackedBytes] |= valueMasked << (BITS_PER_SYMBOL - unpackedBits - remainingBits);
                 unpackedBits += remainingBits;
                 remainingBits = 0;
 
-                if (unpackedBits === 5) {
+                if (unpackedBits === BITS_PER_SYMBOL) {
                     unpackedBits = 0;
                     unpackedBytes++;
                 }
@@ -128,7 +140,7 @@ function unpack5Bit(packed: number[]): number[] {
 export function getCardFormatType(input: string): CardFormatType {
     const card = input.replace(/\s/g, '').toUpperCase();
 
-    if (card.length !== 16) {
+    if (card.length !== CARD_ID_LENGTH) {
         throw new CardConversionError('Card must be 16 characters long');
     }
 
@@ -155,10 +167,11 @@ export function getCardIdFromDisplayId(displayId: string): string {
         bytes.push(val);
     }
 
-    if (bytes.length !== 16) {
+    if (bytes.length !== CARD_ID_LENGTH) {
         throw new CardConversionError('Display ID must be 16 characters long');
     }
 
+    // Validate parity, encoding, and checksum
     if (bytes[11] % 2 !== bytes[12] % 2) {
         throw new CardConversionError('Display ID parity check failed');
     }
@@ -180,11 +193,13 @@ export function getCardIdFromDisplayId(displayId: string): string {
         throw new CardConversionError('Unknown card type');
     }
 
+    // Reverse the XOR chain to recover original 5-bit symbols
     for (let i = 13; i >= 1; i--) {
         bytes[i] ^= bytes[i - 1];
     }
     bytes[0] ^= cardType;
 
+    // Pack 5-bit symbols into 8-bit bytes for decryption
     const trimmed = bytes.slice(0, 13);
     const packed = pack5Bit(trimmed);
     const packedBytes = packed.slice(0, 8);
@@ -247,17 +262,19 @@ export function getDisplayIdFromCardId(cardId: string): string {
         throw new CardConversionError('Failed to encrypt card ID');
     }
 
+    // Unpack encrypted bytes into 5-bit symbols
     const encryptedBytes = wordArrayToBytes(encrypted);
     const unpacked = unpack5Bit(encryptedBytes).slice(0, 13);
     const card = [...unpacked, 0, 0, 0];
 
+    // Apply XOR chain: seed with card type, set propagation value, then forward-propagate
     card[0] ^= cardType;
     card[13] = 1;
-
     for (let i = 0; i <= 13; i++) {
         card[i + 1] ^= card[i];
     }
 
+    // Append card type identifier and checksum
     card[14] = cardType;
     card[15] = getChecksum(card);
 
@@ -270,6 +287,13 @@ export function getDisplayIdFromCardId(cardId: string): string {
     }
 
     return displayId;
+}
+
+export function generateCardId(): string {
+    const hex = '0123456789ABCDEF';
+    let id = MAGSTRIPE_PREFIX;
+    for (let i = 0; i < CARD_ID_BODY_LENGTH; i++) id += hex[Math.floor(Math.random() * 16)];
+    return id;
 }
 
 export function validateAndConvertCard(input: string): string {

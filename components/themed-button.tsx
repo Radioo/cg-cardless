@@ -2,7 +2,7 @@ import {ActivityIndicator, Pressable, StyleSheet} from 'react-native';
 import {ThemedText} from '@/components/themed-text';
 import {useThemeColor} from '@/hooks/use-theme-color';
 
-type Props = {
+type ThemedButtonProps = {
     title: string;
     onPress: () => void;
     variant?: 'primary' | 'secondary';
@@ -10,9 +10,9 @@ type Props = {
     loading?: boolean;
 };
 
-export function ThemedButton({title, onPress, variant = 'primary', disabled, loading}: Props) {
-    const bg = useThemeColor({}, variant === 'primary' ? 'primary' : 'secondary');
-    const textColor = useThemeColor({}, variant === 'primary' ? 'primaryText' : 'secondaryText');
+export function ThemedButton({title, onPress, variant = 'primary', disabled, loading}: ThemedButtonProps) {
+    const bg = useThemeColor(variant === 'primary' ? 'primary' : 'secondary');
+    const textColor = useThemeColor(variant === 'primary' ? 'primaryText' : 'secondaryText');
 
     return (
         <Pressable
@@ -33,7 +33,6 @@ const styles = StyleSheet.create({
     button: {
         paddingHorizontal: 24,
         paddingVertical: 12,
-        borderRadius: 0,
         alignItems: 'center',
     },
     text: {

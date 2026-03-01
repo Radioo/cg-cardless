@@ -1,12 +1,13 @@
 import {ActivityIndicator, StyleSheet} from 'react-native';
-import {useRef, useState} from 'react';
+import {useCallback, useRef, useState} from 'react';
 import {BarcodeScanningResult, CameraType, CameraView, useCameraPermissions} from 'expo-camera';
 import {useRouter} from 'expo-router';
+import {useFocusEffect} from '@react-navigation/native';
 import {ThemedText} from '@/components/themed-text';
 import {ThemedButton} from '@/components/themed-button';
 import {useThemeColor} from '@/hooks/use-theme-color';
 
-const QR_PATTERN = /sppass\/[a-zA-Z0-9]{64}$/;
+const QR_PATTERN = /^https:\/\/.+\/sppass\/[a-zA-Z0-9]{64}$/;
 
 export function QrScanner({cardId}: { cardId: string | null }) {
     const [facing, setFacing] = useState<CameraType>('back');
@@ -14,7 +15,11 @@ export function QrScanner({cardId}: { cardId: string | null }) {
     const [validationError, setValidationError] = useState<string | null>(null);
     const navigated = useRef(false);
     const router = useRouter();
-    const errorColor = useThemeColor({}, 'error');
+    const errorColor = useThemeColor('error');
+
+    useFocusEffect(useCallback(() => {
+        navigated.current = false;
+    }, []));
 
     function handleBarcodeScanned(result: BarcodeScanningResult) {
         if (!cardId) return;
@@ -59,10 +64,10 @@ export function QrScanner({cardId}: { cardId: string | null }) {
                 onBarcodeScanned={handleBarcodeScanned}
             />
             {validationError && (
-                <ThemedText style={[styles.errorText, {color: errorColor}]}>{validationError}</ThemedText>
-            )}
-            {validationError && (
-                <ThemedButton title="Clear" variant="secondary" onPress={() => setValidationError(null)}/>
+                <>
+                    <ThemedText style={[styles.errorText, {color: errorColor}]}>{validationError}</ThemedText>
+                    <ThemedButton title="Clear" variant="secondary" onPress={() => setValidationError(null)}/>
+                </>
             )}
             <ThemedButton title="Flip camera" variant="secondary" onPress={toggleCameraFacing}/>
         </>
@@ -77,7 +82,6 @@ const styles = StyleSheet.create({
     cameraView: {
         width: '100%',
         height: 300,
-        borderRadius: 0,
         overflow: 'hidden',
     },
     errorText: {

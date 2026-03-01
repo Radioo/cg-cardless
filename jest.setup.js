@@ -19,13 +19,6 @@ jest.mock('expo-camera', () => {
   };
 });
 
-// expo-haptics
-jest.mock('expo-haptics', () => ({
-  impactAsync: jest.fn(),
-  notificationAsync: jest.fn(),
-  selectionAsync: jest.fn(),
-}));
-
 // expo-system-ui
 jest.mock('expo-system-ui', () => ({
   setBackgroundColorAsync: jest.fn(),
@@ -55,4 +48,10 @@ jest.mock('expo-router', () => ({
     replace: jest.fn(),
   })),
   useLocalSearchParams: jest.fn(() => ({})),
+}));
+
+// @react-navigation/native
+jest.mock('@react-navigation/native', () => ({
+  ...jest.requireActual('@react-navigation/native'),
+  useFocusEffect: jest.fn((cb) => cb()),
 }));

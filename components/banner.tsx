@@ -1,34 +1,26 @@
-import {StyleSheet} from 'react-native';
+import {StyleSheet, View} from 'react-native';
 import {ThemedText} from '@/components/themed-text';
-import {ThemedView} from '@/components/themed-view';
 import {useThemeColor} from '@/hooks/use-theme-color';
 
-type Props = {
+type BannerProps = {
     message: string;
     variant?: 'warning' | 'error';
 };
 
-export function Banner({message, variant = 'warning'}: Props) {
-    const backgroundColor = useThemeColor(
-        {},
-        variant === 'warning' ? 'warning' : 'error',
-    );
-    const color = useThemeColor(
-        {},
-        variant === 'warning' ? 'warningText' : 'primaryText',
-    );
+export function Banner({message, variant = 'warning'}: BannerProps) {
+    const backgroundColor = useThemeColor(variant === 'warning' ? 'warning' : 'error');
+    const color = useThemeColor(variant === 'warning' ? 'warningText' : 'errorText');
 
     return (
-        <ThemedView style={[styles.banner, {backgroundColor}]}>
+        <View style={[styles.banner, {backgroundColor}]}>
             <ThemedText style={[styles.text, {color}]}>{message}</ThemedText>
-        </ThemedView>
+        </View>
     );
 }
 
 const styles = StyleSheet.create({
     banner: {
         padding: 12,
-        borderRadius: 0,
         width: '100%',
     },
     text: {

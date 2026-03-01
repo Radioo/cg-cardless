@@ -1,10 +1,21 @@
 import {
+  generateCardId,
   getCardFormatType,
   getCardIdFromDisplayId,
   getDisplayIdFromCardId,
   validateAndConvertCard,
   CardConversionError,
+  MAGSTRIPE_PREFIX,
 } from '@/utils/card';
+
+describe('generateCardId', () => {
+  it('returns a 16-character hex string with MAGSTRIPE_PREFIX', () => {
+    const id = generateCardId();
+    expect(id).toHaveLength(16);
+    expect(id.startsWith(MAGSTRIPE_PREFIX)).toBe(true);
+    expect(/^[0-9A-F]{16}$/.test(id)).toBe(true);
+  });
+});
 
 describe('getCardFormatType', () => {
   it('identifies hex card IDs', () => {

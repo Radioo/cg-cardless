@@ -2,30 +2,33 @@ import {StyleSheet, Alert, KeyboardAvoidingView, Platform, Pressable} from 'reac
 import * as Clipboard from 'expo-clipboard';
 import {Ionicons} from '@expo/vector-icons';
 import {useRouter} from 'expo-router';
-import {useEffect, useState} from 'react';
+import {useEffect, useMemo, useState} from 'react';
 import {ThemedText} from '@/components/themed-text';
 import {ThemedView} from '@/components/themed-view';
 import {ThemedTextInput} from '@/components/themed-text-input';
 import {ThemedButton} from '@/components/themed-button';
-import {CardConversionError, getDisplayIdFromCardId} from '@/utils/card';
+import {CardConversionError, generateCardId, getDisplayIdFromCardId} from '@/utils/card';
 import {useSavedCard, useSaveCard} from '@/hooks/use-saved-card';
 import {useThemeColor} from '@/hooks/use-theme-color';
-import {Fonts} from '@/constants/theme';
+import {Fonts} from '@/constants/fonts';
 
 export default function SettingsScreen() {
     const router = useRouter();
     const [card, setCard] = useState('');
     const {data: savedCard} = useSavedCard();
     const saveCardMutation = useSaveCard();
-    const mutedColor = useThemeColor({}, 'muted');
-    const borderColor = useThemeColor({}, 'border');
+    const mutedColor = useThemeColor('muted');
+    const borderColor = useThemeColor('border');
 
-    let displayId: string | null = null;
-    try {
-        if (savedCard) displayId = getDisplayIdFromCardId(savedCard);
-    } catch {
-        // Card type not recognized — no display ID available
-    }
+    const displayId = useMemo(() => {
+        if (!savedCard) return null;
+        try {
+            return getDisplayIdFromCardId(savedCard);
+        } catch (e) {
+            if (e instanceof CardConversionError) return null;
+            throw e;
+        }
+    }, [savedCard]);
 
     useEffect(() => {
         if (savedCard) {
@@ -34,10 +37,7 @@ export default function SettingsScreen() {
     }, [savedCard]);
 
     function handleGenerate() {
-        const hex = '0123456789ABCDEF';
-        let id = 'E004';
-        for (let i = 0; i < 12; i++) id += hex[Math.floor(Math.random() * 16)];
-        setCard(id);
+        setCard(generateCardId());
     }
 
     function handleSave() {
@@ -155,7 +155,7 @@ const styles = StyleSheet.create({
     },
     cardInfoValue: {
         fontSize: 15,
-        fontFamily: Fonts?.mono,
+        fontFamily: Fonts.mono,
         letterSpacing: 1,
     },
 });

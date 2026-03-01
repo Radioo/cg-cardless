@@ -3,13 +3,11 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import * as SystemUI from 'expo-system-ui';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import 'react-native-reanimated';
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { Colors } from '@/constants/theme';
-
-const queryClient = new QueryClient();
 
 const lightTheme = {
   ...DefaultTheme,
@@ -22,6 +20,7 @@ const darkTheme = {
 };
 
 export default function RootLayout() {
+  const [queryClient] = useState(() => new QueryClient());
   const colorScheme = useColorScheme();
   const theme = colorScheme === 'dark' ? darkTheme : lightTheme;
 

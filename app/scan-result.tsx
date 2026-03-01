@@ -1,31 +1,17 @@
 import {ActivityIndicator, StyleSheet} from 'react-native';
-import {useEffect} from 'react';
 import {useLocalSearchParams, useRouter} from 'expo-router';
-import {useMutation} from '@tanstack/react-query';
 import {ThemedText} from '@/components/themed-text';
 import {ThemedView} from '@/components/themed-view';
 import {ThemedButton} from '@/components/themed-button';
 import {useThemeColor} from '@/hooks/use-theme-color';
+import {useSubmitScan} from '@/hooks/use-submit-scan';
+import {ScanError} from '@/utils/scan';
 
 export default function ScanResultScreen() {
     const {url, cardId} = useLocalSearchParams<{ url: string; cardId: string }>();
     const router = useRouter();
-    const errorColor = useThemeColor({}, 'error');
-
-    const {mutate, isPending, isSuccess, isError, error} = useMutation({
-        mutationFn: async () => {
-            const res = await fetch(`${url}/${cardId}`);
-            if (!res.ok) throw new Error(`Request failed: ${res.status}`);
-            const json = await res.json();
-            if (json.error) throw new Error(json.error);
-            if (!json.success) throw new Error('Unexpected response');
-            return json;
-        },
-    });
-
-    useEffect(() => {
-        mutate();
-    }, []);
+    const errorColor = useThemeColor('error');
+    const {isPending, isSuccess, isError, error, refetch} = useSubmitScan(url, cardId);
 
     return (
         <ThemedView style={styles.container}>
@@ -39,8 +25,10 @@ export default function ScanResultScreen() {
             )}
             {isError && (
                 <>
-                    <ThemedText style={[styles.errorText, {color: errorColor}]}>{error.message}</ThemedText>
-                    <ThemedButton title="Retry" onPress={() => router.replace('/')}/>
+                    <ThemedText style={[styles.errorText, {color: errorColor}]}>
+                        {error instanceof ScanError ? error.message : 'An unexpected error occurred'}
+                    </ThemedText>
+                    <ThemedButton title="Retry" onPress={() => refetch()}/>
                 </>
             )}
         </ThemedView>

@@ -1,73 +1,41 @@
-/**
- * Below are the colors that are used in the app. The colors are defined in the light and dark mode.
- * There are many other ways to style your app. For example, [Nativewind](https://www.nativewind.dev/), [Tamagui](https://tamagui.dev/), [unistyles](https://reactnativeunistyles.vercel.app), etc.
- */
-
-import { Platform } from 'react-native';
-
-const tintColorLight = '#0a7ea4';
-const tintColorDark = '#fff';
+const white = '#FFFFFF';
+const black = '#0D1117';
+const lightGray = '#687076';
+const darkGray = '#9BA1A6';
+const lightText = '#ECEDEE';
+const darkBackground = '#151718';
+const lightBorder = '#CCCCCC';
+const darkBorder = '#333333';
 
 export const Colors = {
-  light: {
-    text: '#11181C',
-    background: '#fff',
-    tint: tintColorLight,
-    icon: '#687076',
-    tabIconDefault: '#687076',
-    tabIconSelected: tintColorLight,
-    primary: '#2196F3',
-    primaryText: '#fff',
-    secondary: '#666',
-    secondaryText: '#fff',
-    error: '#D32F2F',
-    warning: '#FFF3CD',
-    warningText: '#856404',
-    border: '#ccc',
-    inputBackground: '#fff',
-    muted: '#687076',
-  },
-  dark: {
-    text: '#ECEDEE',
-    background: '#151718',
-    tint: tintColorDark,
-    icon: '#9BA1A6',
-    tabIconDefault: '#9BA1A6',
-    tabIconSelected: tintColorDark,
-    primary: '#64B5F6',
-    primaryText: '#0D1117',
-    secondary: '#444',
-    secondaryText: '#ECEDEE',
-    error: '#EF5350',
-    warning: '#3B2E00',
-    warningText: '#FFD54F',
-    border: '#333',
-    inputBackground: '#1E2022',
-    muted: '#9BA1A6',
-  },
+    light: {
+        text: '#11181C',
+        background: white,
+        primary: '#2196F3',
+        primaryText: white,
+        secondary: '#666666',
+        secondaryText: white,
+        error: '#D32F2F',
+        errorText: white,
+        warning: '#FFF3CD',
+        warningText: '#856404',
+        border: lightBorder,
+        inputBackground: white,
+        muted: lightGray,
+    },
+    dark: {
+        text: lightText,
+        background: darkBackground,
+        primary: '#64B5F6',
+        primaryText: black,
+        secondary: '#444444',
+        secondaryText: lightText,
+        error: '#EF5350',
+        errorText: white,
+        warning: '#3B2E00',
+        warningText: '#FFD54F',
+        border: darkBorder,
+        inputBackground: '#1E2022',
+        muted: darkGray,
+    },
 };
-
-export const Fonts = Platform.select({
-  ios: {
-    /** iOS `UIFontDescriptorSystemDesignDefault` */
-    sans: 'system-ui',
-    /** iOS `UIFontDescriptorSystemDesignSerif` */
-    serif: 'ui-serif',
-    /** iOS `UIFontDescriptorSystemDesignRounded` */
-    rounded: 'ui-rounded',
-    /** iOS `UIFontDescriptorSystemDesignMonospaced` */
-    mono: 'ui-monospace',
-  },
-  default: {
-    sans: 'normal',
-    serif: 'serif',
-    rounded: 'normal',
-    mono: 'monospace',
-  },
-  web: {
-    sans: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
-    serif: "Georgia, 'Times New Roman', serif",
-    rounded: "'SF Pro Rounded', 'Hiragino Maru Gothic ProN', Meiryo, 'MS PGothic', sans-serif",
-    mono: "SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace",
-  },
-});
