@@ -1,3 +1,5 @@
+import {Platform} from 'react-native';
+
 export class ScanError extends Error {
     constructor(message: string) {
         super(message);
@@ -7,7 +9,8 @@ export class ScanError extends Error {
 
 export async function submitScan(url: string, cardId: string) {
     const endpoint = url.endsWith('/') ? `${url}${cardId}` : `${url}/${cardId}`;
-    const res = await fetch(endpoint);
+    const res = await fetch(endpoint, Platform.OS === 'web' ? {mode: 'no-cors'} : undefined);
+    if (res.type === 'opaque') return {success: true};
     if (!res.ok) throw new ScanError(`Request failed: ${res.status}`);
     let json: { error?: string; success?: boolean };
     try {
