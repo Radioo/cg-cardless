@@ -35,7 +35,9 @@ function addNfcPermissionsAndService(config) {
 
         // Add HCEFService to the application
         const application = manifest.application?.[0];
-        if (!application) return config;
+        if (!application) {
+            return config;
+        }
 
         if (!application.service) {
             application.service = [];

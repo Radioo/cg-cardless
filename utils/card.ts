@@ -78,7 +78,9 @@ function pack5Bit(symbols: number[]): number[] {
     const boundary = BITS_PER_BYTE - BITS_PER_SYMBOL; // 3
 
     for (const symbol of symbols) {
-        if (packed[idx] === undefined) packed[idx] = 0;
+        if (packed[idx] === undefined) {
+            packed[idx] = 0;
+        }
 
         if (bits <= boundary) {
             packed[idx] |= symbol << (boundary - bits);
@@ -158,7 +160,9 @@ export function getCardIdFromDisplayId(displayId: string): string {
     const bytes: number[] = [];
 
     for (const char of displayId.toUpperCase()) {
-        if (char === ' ') continue;
+        if (char === ' ') {
+            continue;
+        }
         const val = DISPLAY_ID_ALPHABET_MAP[char];
         if (val === undefined) {
             throw new CardConversionError(`Invalid character in display ID: ${char}`);
@@ -297,7 +301,9 @@ const HCEF_PREFIX = '02FE';
 export function generateCardId(): string {
     const hex = '0123456789ABCDEF';
     let id = HCEF_PREFIX;
-    for (let i = 0; i < CARD_ID_LENGTH - HCEF_PREFIX.length; i++) id += hex[Math.floor(Math.random() * 16)];
+    for (let i = 0; i < CARD_ID_LENGTH - HCEF_PREFIX.length; i++) {
+        id += hex[Math.floor(Math.random() * 16)];
+    }
     return id;
 }
 

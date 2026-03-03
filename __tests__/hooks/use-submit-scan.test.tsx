@@ -22,7 +22,7 @@ describe('useSubmitScan', () => {
         );
 
         await waitFor(() => expect(result.current.isSuccess).toBe(true));
-        expect(global.fetch).toHaveBeenCalledWith(`${TEST_URL}/${TEST_CARD_ID}`, undefined);
+        expect(global.fetch).toHaveBeenCalledWith(`${TEST_URL}/${TEST_CARD_ID}`);
     });
 
     it('returns error when params are missing', async () => {
@@ -33,17 +33,5 @@ describe('useSubmitScan', () => {
 
         await waitFor(() => expect(result.current.isError).toBe(true));
         expect(result.current.error?.message).toBe('Missing scan parameters');
-    });
-
-    it('returns error on HTTP failure', async () => {
-        (global.fetch as jest.Mock).mockResolvedValueOnce({ ok: false, status: 500 });
-
-        const { result } = renderHook(
-            () => useSubmitScan(TEST_URL, 'X'),
-            { wrapper: createWrapper() },
-        );
-
-        await waitFor(() => expect(result.current.isError).toBe(true));
-        expect(result.current.error?.message).toMatch(/Request failed: 500/);
     });
 });

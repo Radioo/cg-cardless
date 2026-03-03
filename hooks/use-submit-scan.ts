@@ -5,7 +5,9 @@ export function useSubmitScan(url: string | undefined, cardId: string | undefine
     return useQuery({
         queryKey: ['scan', url, cardId],
         queryFn: () => {
-            if (!url || !cardId) throw new ScanError('Missing scan parameters');
+            if (!url || !cardId) {
+                throw new ScanError('Missing scan parameters');
+            }
             return submitScan(url, cardId);
         },
         retry: false,
