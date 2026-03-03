@@ -2,7 +2,7 @@ import {ActivityIndicator, StyleSheet} from 'react-native';
 import {useCallback, useRef, useState} from 'react';
 import {BarcodeScanningResult, CameraType, CameraView, useCameraPermissions} from 'expo-camera';
 import {useRouter} from 'expo-router';
-import {useFocusEffect} from '@react-navigation/native';
+import {useFocusEffect, useIsFocused} from '@react-navigation/native';
 import {ThemedText} from '@/components/themed-text';
 import {ThemedButton} from '@/components/themed-button';
 import {useThemeColor} from '@/hooks/use-theme-color';
@@ -16,6 +16,7 @@ export function QrScanner({cardId}: { cardId: string | null }) {
     const navigated = useRef(false);
     const router = useRouter();
     const errorColor = useThemeColor('error');
+    const isFocused = useIsFocused();
 
     useFocusEffect(useCallback(() => {
         navigated.current = false;
@@ -61,12 +62,14 @@ export function QrScanner({cardId}: { cardId: string | null }) {
 
     return (
         <>
-            <CameraView
-                facing={facing}
-                style={styles.cameraView}
-                barcodeScannerSettings={{barcodeTypes: ['qr']}}
-                onBarcodeScanned={handleBarcodeScanned}
-            />
+            {isFocused && (
+                <CameraView
+                    facing={facing}
+                    style={styles.cameraView}
+                    barcodeScannerSettings={{barcodeTypes: ['qr']}}
+                    onBarcodeScanned={handleBarcodeScanned}
+                />
+            )}
             {validationError && (
                 <>
                     <ThemedText style={[styles.errorText, {color: errorColor}]}>{validationError}</ThemedText>
