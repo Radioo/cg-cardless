@@ -129,6 +129,13 @@ async function main() {
         output: "splash-icon.png",
     });
 
+    // --- Copy web icons to public/ ---
+    const publicDir = "public";
+    for (const file of ["pwa-icon-192.png", "pwa-icon-512.png", "apple-touch-icon.png"]) {
+        fs.copyFileSync(path.join(OUTPUT_DIR, file), path.join(publicDir, file));
+    }
+    console.log("  Copied PWA icons to public/");
+
     console.log(`Done! Generated icons in ${OUTPUT_DIR}/`);
 }
 
