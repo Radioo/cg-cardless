@@ -1,4 +1,4 @@
-import {ActivityIndicator, StyleSheet} from 'react-native';
+import {ActivityIndicator, Platform, StyleSheet} from 'react-native';
 import {useCallback, useRef, useState} from 'react';
 import {BarcodeScanningResult, CameraType, CameraView, useCameraPermissions} from 'expo-camera';
 import {useRouter} from 'expo-router';
@@ -17,6 +17,7 @@ export function QrScanner({cardId}: { cardId: string | null }) {
     const router = useRouter();
     const errorColor = useThemeColor('error');
     const isFocused = useIsFocused();
+    const cameraActive = Platform.OS === 'web' || isFocused;
 
     useFocusEffect(useCallback(() => {
         navigated.current = false;
@@ -62,7 +63,7 @@ export function QrScanner({cardId}: { cardId: string | null }) {
 
     return (
         <>
-            {isFocused && (
+            {cameraActive && (
                 <CameraView
                     facing={facing}
                     style={styles.cameraView}
