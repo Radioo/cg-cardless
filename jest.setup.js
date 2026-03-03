@@ -58,6 +58,7 @@ jest.mock('expo-router', () => ({
 jest.mock('@react-navigation/native', () => ({
     ...jest.requireActual('@react-navigation/native'),
     useFocusEffect: jest.fn((cb) => cb()),
+    useIsFocused: jest.fn(() => true),
 }));
 
 // felica-emulator
