@@ -1,5 +1,5 @@
 import {useEffect} from 'react';
-import {ActivityIndicator, BackHandler, Platform, StyleSheet} from 'react-native';
+import {ActivityIndicator, Platform, StyleSheet} from 'react-native';
 import {useLocalSearchParams, useRouter} from 'expo-router';
 import {ThemedText} from '@/components/themed-text';
 import {ThemedView} from '@/components/themed-view';
@@ -7,6 +7,7 @@ import {ThemedButton} from '@/components/themed-button';
 import {useThemeColor} from '@/hooks/use-theme-color';
 import {useSubmitScan} from '@/hooks/use-submit-scan';
 import {ScanError} from '@/utils/scan';
+import {closeApp} from '@/utils/close-app';
 
 export default function ScanResultScreen() {
     const {url, cardId} = useLocalSearchParams<{ url: string; cardId: string }>();
@@ -16,15 +17,7 @@ export default function ScanResultScreen() {
 
     useEffect(() => {
         if (isSuccess) {
-            const timer = setTimeout(() => {
-                if (Platform.OS === 'android') {
-                    BackHandler.exitApp();
-                } else if (Platform.OS === 'web') {
-                    window.close();
-                } else {
-                    router.replace('/');
-                }
-            }, 1000);
+            const timer = setTimeout(() => closeApp(router), 1000);
             return () => clearTimeout(timer);
         }
     }, [isSuccess, router]);

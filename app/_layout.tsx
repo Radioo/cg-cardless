@@ -53,6 +53,7 @@ export default function RootLayout() {
                     <Stack.Screen name="index" />
                     <Stack.Screen name="scan-result" />
                     <Stack.Screen name="settings" />
+                    <Stack.Screen name="closed" />
                 </Stack>
                 <StatusBar style="auto" />
             </ThemeProvider>

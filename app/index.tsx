@@ -5,6 +5,7 @@ import {QrScanner} from '@/components/qr-scanner';
 import {Banner} from '@/components/banner';
 import {ThemedButton} from '@/components/themed-button';
 import {useSavedCard} from '@/hooks/use-saved-card';
+import {closeApp} from '@/utils/close-app';
 
 export default function WelcomeScreen() {
     const {data: savedCard, isLoading} = useSavedCard();
@@ -23,6 +24,7 @@ export default function WelcomeScreen() {
             {!hasCard && <Banner variant="warning" message="No card saved. Please go to Settings to add your card." />}
             <QrScanner cardId={savedCard ?? null} />
             <ThemedButton variant="secondary" title="Settings" onPress={() => router.push('/settings')}/>
+            <ThemedButton variant="secondary" title="Test Close App" onPress={() => closeApp(router)}/>
         </ThemedView>
     );
 }

@@ -61,6 +61,13 @@ jest.mock('@react-navigation/native', () => ({
     useIsFocused: jest.fn(() => true),
 }));
 
+// exit-app
+jest.mock('@/modules/exit-app', () => ({
+    ExitApp: {
+        exitApp: jest.fn(),
+    },
+}));
+
 // felica-emulator
 jest.mock('@/modules/felica-emulator', () => ({
     FelicaEmulator: {

@@ -46,3 +46,4 @@ app-example
 /.claude/
 /test-results/
 /playwright-report/
+/.env
