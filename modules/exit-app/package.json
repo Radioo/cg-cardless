@@ -2,6 +2,8 @@
   "name": "exit-app",
   "version": "1.0.0",
   "main": "index.ts",
+  "author": "CG Cardless",
+  "license": "UNLICENSED",
   "scripts": {},
   "dependencies": {},
   "devDependencies": {}
