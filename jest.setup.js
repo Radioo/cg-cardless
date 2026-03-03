@@ -88,6 +88,13 @@ jest.mock('expo-constants', () => ({
     },
 }));
 
+// @expo/vector-icons
+jest.mock('@expo/vector-icons/Ionicons', () => {
+    const React = require('react');
+    const { Text } = require('react-native');
+    return (props) => React.createElement(Text, props, props.name);
+});
+
 // felica-emulator
 jest.mock('@/modules/felica-emulator', () => ({
     FelicaEmulator: {

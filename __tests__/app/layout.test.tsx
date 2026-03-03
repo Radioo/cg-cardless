@@ -32,7 +32,13 @@ jest.mock('@react-navigation/native', () => {
     };
 });
 
+jest.useFakeTimers();
+
 describe('RootLayout', () => {
+    afterEach(() => {
+        jest.clearAllTimers();
+    });
+
     it('renders without crashing', () => {
         const result = render(<RootLayout />);
         expect(result).toBeTruthy();

@@ -66,6 +66,7 @@ public/            # Static web assets (favicon, apple-touch-icon)
 
 - **Jest:** `jest-expo` preset. Setup in `jest.setup.js` (React 19 compat, mocks for expo-camera, expo-router, AsyncStorage, native modules). Test helper `__tests__/helpers.tsx` provides `createWrapper()` for QueryClientProvider.
 - **Playwright:** Chromium only, serves `dist/` on port 3000. Tests in `e2e/`.
+- Always fix all test errors and warnings when working on tests, especially the one with "A worker process has failed to exit gracefully and has been force exited."
 
 ## Key Files
 

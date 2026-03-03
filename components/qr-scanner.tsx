@@ -1,4 +1,4 @@
-import {ActivityIndicator, Platform, StyleSheet} from 'react-native';
+import {ActivityIndicator, Platform, StyleSheet, View} from 'react-native';
 import {useCallback, useRef, useState} from 'react';
 import {BarcodeScanningResult, CameraType, CameraView, useCameraPermissions} from 'expo-camera';
 import {useRouter} from 'expo-router';
@@ -13,6 +13,8 @@ export function QrScanner({cardId}: { cardId: string | null }) {
     const [facing, setFacing] = useState<CameraType>('back');
     const [permission, requestPermission] = useCameraPermissions();
     const [validationError, setValidationError] = useState<string | null>(null);
+    const [cameraReady, setCameraReady] = useState(false);
+    const [cameraError, setCameraError] = useState<string | null>(null);
     const navigated = useRef(false);
     const router = useRouter();
     const errorColor = useThemeColor('error');
@@ -43,6 +45,8 @@ export function QrScanner({cardId}: { cardId: string | null }) {
     }
 
     function toggleCameraFacing() {
+        setCameraReady(false);
+        setCameraError(null);
         setFacing(current => (current === 'back' ? 'front' : 'back'));
     }
 
@@ -64,12 +68,23 @@ export function QrScanner({cardId}: { cardId: string | null }) {
     return (
         <>
             {cameraActive && (
-                <CameraView
-                    facing={facing}
-                    style={styles.cameraView}
-                    barcodeScannerSettings={{barcodeTypes: ['qr']}}
-                    onBarcodeScanned={handleBarcodeScanned}
-                />
+                <View style={styles.cameraContainer}>
+                    <CameraView
+                        key={facing}
+                        facing={facing}
+                        style={styles.cameraView}
+                        barcodeScannerSettings={{barcodeTypes: ['qr']}}
+                        onBarcodeScanned={handleBarcodeScanned}
+                        onCameraReady={() => setCameraReady(true)}
+                        onMountError={(e) => setCameraError(e.message)}
+                    />
+                    {!cameraReady && !cameraError && <ActivityIndicator style={styles.cameraOverlay}/>}
+                    {cameraError && (
+                        <ThemedText style={[styles.cameraOverlay, {color: errorColor}]}>
+                            Failed to start camera: {cameraError}
+                        </ThemedText>
+                    )}
+                </View>
             )}
             {validationError && (
                 <>
@@ -87,10 +102,18 @@ const styles = StyleSheet.create({
         marginTop: 12,
         textAlign: 'center',
     },
-    cameraView: {
+    cameraContainer: {
         width: '100%',
         height: 300,
         overflow: 'hidden',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    cameraView: {
+        ...StyleSheet.absoluteFillObject,
+    },
+    cameraOverlay: {
+        textAlign: 'center',
     },
     errorText: {
         textAlign: 'center',

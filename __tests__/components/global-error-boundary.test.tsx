@@ -5,12 +5,22 @@ import * as Clipboard from 'expo-clipboard';
 
 import {GlobalErrorBoundary} from '@/components/global-error-boundary';
 
+jest.useFakeTimers();
+
 // Suppress expected console.error from React error boundaries
 const originalConsoleError = console.error;
 beforeAll(() => {
     console.error = (...args: unknown[]) => {
-        const msg = typeof args[0] === 'string' ? args[0] : '';
-        if (msg.includes('Error: Uncaught') || msg.includes('The above error')) {
+        // Suppress Error objects logged by React's defaultOnCaughtError
+        if (args[0] instanceof Error) {
+            return;
+        }
+        const msg = args.map(String).join(' ');
+        // Suppress React error boundary messages
+        if (
+            msg.includes('The above error') ||
+            msg.includes('Error: Uncaught')
+        ) {
             return;
         }
         originalConsoleError(...args);
