@@ -1,4 +1,4 @@
-import {requireNativeModule} from 'expo-modules-core';
+import {requireOptionalNativeModule} from 'expo-modules-core';
 
 type FelicaStatus = {
     isEmulationActive: boolean;
@@ -16,4 +16,4 @@ type FelicaEmulatorModuleType = {
     disableEmulation(): Promise<void>;
 };
 
-export default requireNativeModule<FelicaEmulatorModuleType>('FelicaEmulator');
+export default requireOptionalNativeModule<FelicaEmulatorModuleType>('FelicaEmulator');
