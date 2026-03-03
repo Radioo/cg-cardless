@@ -82,7 +82,7 @@ async function main() {
     await renderIcon({
         color: LOGO_COLOR,
         canvasSize: 1024,
-        contentSize: 624,
+        contentSize: 700,
         bgColor: BG_COLOR,
         output: "icon.png",
     });

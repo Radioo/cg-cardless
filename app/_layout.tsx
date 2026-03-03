@@ -7,8 +7,9 @@ import { Platform } from 'react-native';
 import { useEffect, useState } from 'react';
 import 'react-native-reanimated';
 
-import { useColorScheme } from '@/hooks/use-color-scheme';
+import { GlobalErrorBoundary } from '@/components/global-error-boundary';
 import { Colors } from '@/constants/theme';
+import { useColorScheme } from '@/hooks/use-color-scheme';
 
 const lightTheme = {
     ...DefaultTheme,
@@ -43,20 +44,22 @@ export default function RootLayout() {
     }, []);
 
     return (
-        <QueryClientProvider client={queryClient}>
-            <ThemeProvider value={theme}>
-                <Stack screenOptions={{
-                    headerShown: false,
-                    contentStyle: { backgroundColor: theme.colors.background },
-                    animation: 'fade',
-                }}>
-                    <Stack.Screen name="index" />
-                    <Stack.Screen name="scan-result" />
-                    <Stack.Screen name="settings" />
-                    <Stack.Screen name="closed" />
-                </Stack>
-                <StatusBar style="auto" />
-            </ThemeProvider>
-        </QueryClientProvider>
+        <GlobalErrorBoundary>
+            <QueryClientProvider client={queryClient}>
+                <ThemeProvider value={theme}>
+                    <Stack screenOptions={{
+                        headerShown: false,
+                        contentStyle: { backgroundColor: theme.colors.background },
+                        animation: 'fade',
+                    }}>
+                        <Stack.Screen name="index" />
+                        <Stack.Screen name="scan-result" />
+                        <Stack.Screen name="settings" />
+                        <Stack.Screen name="closed" />
+                    </Stack>
+                    <StatusBar style="auto" />
+                </ThemeProvider>
+            </QueryClientProvider>
+        </GlobalErrorBoundary>
     );
 }

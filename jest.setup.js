@@ -68,6 +68,26 @@ jest.mock('@/modules/exit-app', () => ({
     },
 }));
 
+// react-native-safe-area-context
+jest.mock('react-native-safe-area-context', () => {
+    const React = require('react');
+    const { View } = require('react-native');
+    return {
+        SafeAreaView: (props) => React.createElement(View, props),
+        SafeAreaProvider: (props) => React.createElement(View, props),
+        useSafeAreaInsets: jest.fn(() => ({ top: 0, right: 0, bottom: 0, left: 0 })),
+    };
+});
+
+// expo-constants
+jest.mock('expo-constants', () => ({
+    __esModule: true,
+    default: {
+        expoConfig: { version: '1.0.0' },
+        deviceName: 'Test Device',
+    },
+}));
+
 // felica-emulator
 jest.mock('@/modules/felica-emulator', () => ({
     FelicaEmulator: {
