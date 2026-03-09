@@ -116,7 +116,7 @@ jobs:
       - name: Run Maestro Tests
         env:
           MAESTRO_DRIVER_STARTUP_TIMEOUT: 120000
-        run: maestro --device "$DEVICE_UDID" test --retries 1 e2e-ios/
+        run: maestro --device "$DEVICE_UDID" test e2e-ios/
 
       - name: Upload Maestro logs on failure
         if: failure()
