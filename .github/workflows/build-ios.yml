@@ -1,10 +1,23 @@
 name: Build iOS
 
-on: workflow_dispatch
+on:
+  workflow_dispatch:
+    inputs:
+      configuration:
+        description: Build configuration
+        required: true
+        default: Release
+        type: choice
+        options:
+          - Debug
+          - Release
 
 jobs:
   build:
     runs-on: macos-latest
+
+    env:
+      DERIVED_DATA_PATH: ${{ github.workspace }}/DerivedData
 
     steps:
       - name: Checkout repository
@@ -15,6 +28,11 @@ jobs:
         with:
           node-version: 20
           cache: npm
+
+      - name: Set up ccache
+        uses: hendrikmuhs/ccache-action@v1
+        with:
+          key: ios-ccache-${{ inputs.configuration }}
 
       - name: Cache node_modules
         id: cache-modules
@@ -30,27 +48,58 @@ jobs:
       - name: Expo Prebuild
         run: npx expo prebuild --platform ios
 
+      - name: Cache CocoaPods
+        id: cache-pods
+        uses: actions/cache@v5
+        with:
+          path: ios/Pods
+          key: pods-${{ hashFiles('ios/Podfile.lock') }}
+
+      - name: Install CocoaPods
+        if: steps.cache-pods.outputs.cache-hit != 'true'
+        run: cd ios && pod install
+
+      - name: Cache DerivedData
+        uses: actions/cache@v5
+        with:
+          path: ${{ env.DERIVED_DATA_PATH }}
+          key: derived-data-${{ inputs.configuration }}-${{ hashFiles('ios/Podfile.lock') }}-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            derived-data-${{ inputs.configuration }}-${{ hashFiles('ios/Podfile.lock') }}-
+            derived-data-${{ inputs.configuration }}-
+
       - name: Build Archive (Unsigned)
+        env:
+          USE_CCACHE: "1"
         run: |
           xcodebuild -workspace ios/CGCardless.xcworkspace \
             -scheme CGCardless \
-            -configuration Release \
+            -configuration ${{ inputs.configuration }} \
+            -derivedDataPath ${{ env.DERIVED_DATA_PATH }} \
             -archivePath ios/buildArchive/CGCardless.xcarchive \
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGN_IDENTITY="" \
-            clean archive
+            archive
+
+      - name: Upload build logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: xcodebuild-logs
+          path: ${{ env.DERIVED_DATA_PATH }}/Logs/Build/
 
       - name: Prepare IPA Package
         run: |
           COMMIT_ID=$(git rev-parse --short HEAD)
           DATE=$(date +"%Y-%m-%d_%H-%M")
-          
+          CONFIG=${{ inputs.configuration }}
+
           mkdir -p Payload
           cp -r ios/buildArchive/CGCardless.xcarchive/Products/Applications/CGCardless.app Payload/
-          zip -qr CGCardless_${DATE}_${COMMIT_ID}.ipa Payload
-          
-          echo "IPA_NAME=CGCardless_${DATE}_${COMMIT_ID}.ipa" >> $GITHUB_ENV
+          zip -qr CGCardless_${CONFIG}_${DATE}_${COMMIT_ID}.ipa Payload
+
+          echo "IPA_NAME=CGCardless_${CONFIG}_${DATE}_${COMMIT_ID}.ipa" >> $GITHUB_ENV
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v7
