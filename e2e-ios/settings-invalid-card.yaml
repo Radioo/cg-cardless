@@ -26,7 +26,7 @@ appId: com.radi0.cgcardless
 
 # Clear and try an invalid format card (16 chars but not hex and not display ID)
 - tapOn: "Enter your card"
-- clearText
+- eraseText: 3
 - inputText: "IIIIIIIIIIIIIIII"
 - tapOn: "Save Card"
 

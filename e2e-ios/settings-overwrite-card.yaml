@@ -16,7 +16,7 @@ appId: com.radi0.cgcardless
 
 # Overwrite with a new card
 - tapOn: "Enter your card"
-- clearText
+- eraseText: 16
 - inputText: "02FEAABBCCDDEEFF"
 - tapOn: "Save Card"
 - assertVisible: "Saved"
