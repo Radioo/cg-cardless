@@ -107,10 +107,18 @@ jobs:
           curl -fsSL "https://get.maestro.mobile.dev" | bash
           echo "$HOME/.maestro/bin" >> $GITHUB_PATH
 
+      - name: Wait for Simulator to be ready
+        run: xcrun simctl bootstatus "$DEVICE_UDID" -b
+
       - name: Install App on Simulator
         run: xcrun simctl install "$DEVICE_UDID" build-cache/CGCardless.app
 
+      - name: Launch App
+        run: xcrun simctl launch "$DEVICE_UDID" com.radi0.cgcardless
+
       - name: Run Maestro Tests
+        env:
+          MAESTRO_DRIVER_STARTUP_TIMEOUT: 120000
         run: maestro --device "$DEVICE_UDID" test e2e-ios/
 
       - name: Upload Maestro logs on failure
