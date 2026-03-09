@@ -1,0 +1,22 @@
+appId: com.radi0.cgcardless
+---
+- launchApp:
+    clearState: true
+
+# Navigate to Settings
+- tapOn: "Settings"
+
+# Enter a valid magstripe Card ID (starts with E004)
+- tapOn: "Enter your card"
+- inputText: "E004012345678901"
+- tapOn: "Save Card"
+
+# Verify success dialog
+- assertVisible: "Saved"
+- assertVisible: "Card saved successfully."
+- tapOn: "OK"
+
+# Verify card info is displayed
+- assertVisible: "Card ID"
+- assertVisible: "E004012345678901"
+- assertVisible: "Display ID"

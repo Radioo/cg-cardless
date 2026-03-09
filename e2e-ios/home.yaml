@@ -1,5 +1,16 @@
 appId: com.radi0.cgcardless
 ---
-- launchApp
-- assertVisible: "Settings"
+- launchApp:
+    clearState: true
+
+# Home screen shows warning banner when no card is saved
 - assertVisible: "No card saved. Please go to Settings to add your card."
+
+# Home screen shows Settings button
+- assertVisible: "Settings"
+
+# Home screen shows Flip camera button
+- assertVisible: "Flip camera"
+
+# Home screen shows camera permission prompt or camera view
+# (camera permission is handled by the OS, so we just verify the UI elements)

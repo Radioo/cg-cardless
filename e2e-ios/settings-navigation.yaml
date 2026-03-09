@@ -1,0 +1,22 @@
+appId: com.radi0.cgcardless
+---
+- launchApp:
+    clearState: true
+
+# Navigate to Settings from Home
+- tapOn: "Settings"
+
+# Verify Settings screen elements
+- assertVisible: "Settings"
+- assertVisible: "Card"
+- assertVisible: "Enter a Card ID (hex) or Display ID"
+- assertVisible: "Generate Card"
+- assertVisible: "Save Card"
+- assertVisible: "Back"
+
+# Navigate back to Home
+- tapOn: "Back"
+
+# Verify we're back on the home screen
+- assertVisible: "No card saved. Please go to Settings to add your card."
+- assertVisible: "Settings"

@@ -1,0 +1,35 @@
+appId: com.radi0.cgcardless
+---
+- launchApp:
+    clearState: true
+
+# Navigate to Settings
+- tapOn: "Settings"
+
+# Try saving empty card
+- tapOn: "Save Card"
+
+# Verify error dialog for empty input
+- assertVisible: "Error"
+- assertVisible: "Card cannot be empty"
+- tapOn: "OK"
+
+# Try saving a card that's too short
+- tapOn: "Enter your card"
+- inputText: "ABC"
+- tapOn: "Save Card"
+
+# Verify error dialog for short card
+- assertVisible: "Error"
+- assertVisible: "Card must be 16 characters long"
+- tapOn: "OK"
+
+# Clear and try an invalid format card (16 chars but not hex and not display ID)
+- tapOn: "Enter your card"
+- clearText
+- inputText: "IIIIIIIIIIIIIIII"
+- tapOn: "Save Card"
+
+# Verify error dialog for unknown format
+- assertVisible: "Error"
+- tapOn: "OK"

@@ -1,0 +1,17 @@
+appId: com.radi0.cgcardless
+---
+- launchApp:
+    clearState: true
+
+# Navigate to Settings
+- tapOn: "Settings"
+
+# Enter a valid hex card ID that doesn't start with E004 or 0 (unknown card type)
+- tapOn: "Enter your card"
+- inputText: "AAAAAAAAAAAAAAAA"
+- tapOn: "Save Card"
+
+# Should show error for unknown card type (not magstripe E004 or FeliCa 0x prefix)
+- assertVisible: "Error"
+- assertVisible: "Unknown card type"
+- tapOn: "OK"
