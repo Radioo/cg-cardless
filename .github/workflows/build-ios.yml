@@ -1,0 +1,60 @@
+name: Build iOS
+
+on: workflow_dispatch
+
+jobs:
+  build:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Cache node_modules
+        id: cache-modules
+        uses: actions/cache@v4
+        with:
+          path: node_modules
+          key: node-modules-${{ hashFiles('package-lock.json') }}
+
+      - name: Install dependencies
+        if: steps.cache-modules.outputs.cache-hit != 'true'
+        run: npm ci
+
+      - name: Expo Prebuild
+        run: npx expo prebuild --platform ios
+
+      - name: Build Archive (Unsigned)
+        run: |
+          xcodebuild -workspace ios/CGCardless.xcworkspace \
+            -scheme CGCardless \
+            -configuration Release \
+            -archivePath ios/buildArchive/CGCardless.xcarchive \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            clean archive
+
+      - name: Prepare IPA Package
+        run: |
+          COMMIT_ID=$(git rev-parse --short HEAD)
+          DATE=$(date +"%Y-%m-%d_%H-%M")
+          
+          mkdir -p Payload
+          cp -r ios/buildArchive/CGCardless.xcarchive/Products/Applications/CGCardless.app Payload/
+          zip -qr CGCardless_${DATE}_${COMMIT_ID}.ipa Payload
+          
+          echo "IPA_NAME=CGCardless_${DATE}_${COMMIT_ID}.ipa" >> $GITHUB_ENV
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v7
+        with:
+          archive: false
+          name: ${{ env.IPA_NAME }}
+          path: ${{ env.IPA_NAME }}
