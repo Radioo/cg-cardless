@@ -23,7 +23,7 @@ module.exports = {
                 '-configuration Release',
                 '-sdk iphonesimulator',
                 '-derivedDataPath ios/build',
-                '-destination "platform=iOS Simulator,name=iPhone 16,OS=latest"',
+                '-destination "generic/platform=iOS Simulator"',
                 'CODE_SIGNING_ALLOWED=NO',
                 '-quiet',
             ].join(' '),
