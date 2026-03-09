@@ -96,17 +96,20 @@ export default function SettingsScreen() {
                                 placeholder="Enter your card"
                                 autoCapitalize="characters"
                                 autoCorrect={false}
+                                testID="card-input"
                             />
                             <View className="flex-row gap-3">
                                 <Button
                                     variant="secondary"
                                     onPress={handleGenerate}
+                                    testID="generate-card-btn"
                                 >
                                     <Text>Generate Card</Text>
                                 </Button>
                                 <Button
                                     onPress={handleSave}
                                     disabled={saveCardMutation.isPending}
+                                    testID="save-card-btn"
                                 >
                                     <Text>{saveCardMutation.isPending ? 'Saving...' : 'Save Card'}</Text>
                                 </Button>
@@ -114,17 +117,17 @@ export default function SettingsScreen() {
                             {savedCard && (
                                 <>
                                     <Separator />
-                                    <View className="gap-1">
+                                    <View className="gap-1" testID="saved-card-info">
                                         <Text variant="small" className="text-muted-foreground">Card ID</Text>
                                         <Pressable className="flex-row items-center gap-2" onPress={() => Clipboard.setStringAsync(savedCard)}>
                                             <Ionicons name="copy-outline" size={16} className="text-muted-foreground" />
-                                            <Text className="text-[15px] tracking-wider" style={{ fontFamily: Fonts.mono }}>
+                                            <Text testID="card-id-value" className="text-[15px] tracking-wider" style={{ fontFamily: Fonts.mono }}>
                                                 {savedCard}
                                             </Text>
                                         </Pressable>
                                         {displayId && (
                                             <>
-                                                <Text variant="small" className="mt-2 text-muted-foreground">Display ID</Text>
+                                                <Text testID="display-id-label" variant="small" className="mt-2 text-muted-foreground">Display ID</Text>
                                                 <Pressable className="flex-row items-center gap-2" onPress={() => Clipboard.setStringAsync(displayId)}>
                                                     <Ionicons name="copy-outline" size={16} className="text-muted-foreground" />
                                                     <Text className="text-[15px] tracking-wider" style={{ fontFamily: Fonts.mono }}>
@@ -174,7 +177,7 @@ export default function SettingsScreen() {
                         </Card>
                     )}
 
-                    <Button variant="secondary" onPress={() => router.back()}>
+                    <Button variant="secondary" onPress={() => router.back()} testID="back-btn">
                         <Text>Back</Text>
                     </Button>
                 </View>
@@ -183,11 +186,11 @@ export default function SettingsScreen() {
             <AlertDialog open={dialog.open} onOpenChange={(open) => setDialog(prev => ({ ...prev, open }))}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
-                        <AlertDialogTitle>{dialog.title}</AlertDialogTitle>
-                        <AlertDialogDescription>{dialog.message}</AlertDialogDescription>
+                        <AlertDialogTitle testID="dialog-title">{dialog.title}</AlertDialogTitle>
+                        <AlertDialogDescription testID="dialog-message">{dialog.message}</AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                        <AlertDialogAction onPress={() => setDialog(prev => ({ ...prev, open: false }))}>
+                        <AlertDialogAction testID="dialog-ok-btn" onPress={() => setDialog(prev => ({ ...prev, open: false }))}>
                             <Text>OK</Text>
                         </AlertDialogAction>
                     </AlertDialogFooter>

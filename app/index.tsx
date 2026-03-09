@@ -24,9 +24,9 @@ export default function WelcomeScreen() {
 
     return (
         <View className="flex-1 items-center justify-center gap-2 bg-background p-5">
-            {!hasCard && <Banner variant="warning" message="No card saved. Please go to Settings to add your card." />}
+            {!hasCard && <Banner variant="warning" message="No card saved. Please go to Settings to add your card." testID="no-card-warning" />}
             <QrScanner cardId={savedCard ?? null} />
-            <Button variant="secondary" onPress={() => router.push('/settings')}>
+            <Button variant="secondary" onPress={() => router.push('/settings')} testID="settings-btn">
                 <Text>Settings</Text>
             </Button>
         </View>
