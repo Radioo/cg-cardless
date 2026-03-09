@@ -16,9 +16,6 @@ jobs:
   build:
     runs-on: macos-latest
 
-    env:
-      DERIVED_DATA_PATH: ${{ github.workspace }}/DerivedData
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -28,11 +25,6 @@ jobs:
         with:
           node-version: 20
           cache: npm
-
-      - name: Set up ccache
-        uses: hendrikmuhs/ccache-action@v1
-        with:
-          key: ios-ccache-${{ inputs.configuration }}
 
       - name: Cache node_modules
         id: cache-modules
@@ -45,10 +37,25 @@ jobs:
         if: steps.cache-modules.outputs.cache-hit != 'true'
         run: npm ci
 
+      - name: Calculate native fingerprint
+        id: fingerprint
+        run: |
+          HASH=$(npx @expo/fingerprint fingerprint:generate --platform ios | python3 -c "import json,sys; print(json.load(sys.stdin)['hash'])")
+          echo "hash=$HASH" >> $GITHUB_OUTPUT
+
+      - name: Check for cached archive
+        id: cached-archive
+        uses: actions/cache@v5
+        with:
+          path: build-cache/${{ inputs.configuration }}/CGCardless.xcarchive
+          key: ios-archive-${{ inputs.configuration }}-${{ steps.fingerprint.outputs.hash }}
+
       - name: Expo Prebuild
+        if: steps.cached-archive.outputs.cache-hit != 'true'
         run: npx expo prebuild --platform ios
 
       - name: Cache CocoaPods
+        if: steps.cached-archive.outputs.cache-hit != 'true'
         id: cache-pods
         uses: actions/cache@v5
         with:
@@ -56,38 +63,40 @@ jobs:
           key: pods-${{ hashFiles('ios/Podfile.lock') }}
 
       - name: Install CocoaPods
-        if: steps.cache-pods.outputs.cache-hit != 'true'
+        if: steps.cached-archive.outputs.cache-hit != 'true' && steps.cache-pods.outputs.cache-hit != 'true'
         run: cd ios && pod install
 
-      - name: Cache DerivedData
-        uses: actions/cache@v5
-        with:
-          path: ${{ env.DERIVED_DATA_PATH }}
-          key: derived-data-${{ inputs.configuration }}-${{ hashFiles('ios/Podfile.lock') }}-${{ hashFiles('package-lock.json') }}
-          restore-keys: |
-            derived-data-${{ inputs.configuration }}-${{ hashFiles('ios/Podfile.lock') }}-
-            derived-data-${{ inputs.configuration }}-
-
       - name: Build Archive (Unsigned)
-        env:
-          USE_CCACHE: "1"
+        if: steps.cached-archive.outputs.cache-hit != 'true'
         run: |
           xcodebuild -workspace ios/CGCardless.xcworkspace \
             -scheme CGCardless \
             -configuration ${{ inputs.configuration }} \
-            -derivedDataPath ${{ env.DERIVED_DATA_PATH }} \
+            -derivedDataPath DerivedData \
             -archivePath ios/buildArchive/CGCardless.xcarchive \
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGN_IDENTITY="" \
             archive
 
+      - name: Cache built archive
+        if: steps.cached-archive.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p build-cache/${{ inputs.configuration }}
+          cp -R ios/buildArchive/CGCardless.xcarchive build-cache/${{ inputs.configuration }}/CGCardless.xcarchive
+
+      - name: Restore archive from cache
+        if: steps.cached-archive.outputs.cache-hit == 'true'
+        run: |
+          mkdir -p ios/buildArchive
+          cp -R build-cache/${{ inputs.configuration }}/CGCardless.xcarchive ios/buildArchive/CGCardless.xcarchive
+
       - name: Upload build logs on failure
         if: failure()
         uses: actions/upload-artifact@v7
         with:
           name: xcodebuild-logs
-          path: ${{ env.DERIVED_DATA_PATH }}/Logs/Build/
+          path: DerivedData/Logs/Build/
 
       - name: Prepare IPA Package
         run: |
