@@ -22,10 +22,7 @@ jest.mock('expo-status-bar', () => ({
 
 jest.mock('@react-navigation/native', () => {
     const mockReact = require('react');
-    const { Colors } = require('@/constants/theme');
     return {
-        DarkTheme: { colors: { background: Colors.dark.background, card: Colors.dark.background } },
-        DefaultTheme: { colors: { background: Colors.light.background, card: Colors.light.background } },
         ThemeProvider: ({ children }: { children: React.ReactNode }) =>
             mockReact.createElement(mockReact.Fragment, null, children),
         useFocusEffect: jest.fn((cb: () => void) => cb()),

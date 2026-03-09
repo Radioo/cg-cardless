@@ -111,3 +111,109 @@ jest.mock('@/modules/felica-emulator', () => ({
         disableEmulation: jest.fn(() => Promise.resolve()),
     },
 }));
+
+// react-native-css-interop — stub the interop used by NativeWind babel transform
+jest.mock('react-native-css-interop', () => ({
+    cssInterop: jest.fn(),
+    remapProps: jest.fn(),
+    StyleSheet: {
+        create: (styles) => styles,
+    },
+}));
+
+// NativeWind / className support — strip className props in tests
+jest.mock('nativewind', () => ({
+    useColorScheme: jest.fn(() => ({
+        colorScheme: 'light',
+        setColorScheme: jest.fn(),
+        toggleColorScheme: jest.fn(),
+    })),
+}));
+
+// @/lib/use-color-scheme (NativeWind wrapper)
+jest.mock('@/lib/use-color-scheme', () => ({
+    useColorScheme: jest.fn(() => ({
+        colorScheme: 'light',
+        isDarkColorScheme: false,
+        setColorScheme: jest.fn(),
+        toggleColorScheme: jest.fn(),
+    })),
+}));
+
+// @/lib/theme
+jest.mock('@/lib/theme', () => ({
+    NAV_THEME: {
+        light: {
+            background: '#ffffff',
+            border: '#cccccc',
+            card: '#ffffff',
+            notification: '#ff0000',
+            primary: '#007aff',
+            text: '#000000',
+        },
+        dark: {
+            background: '#000000',
+            border: '#333333',
+            card: '#000000',
+            notification: '#ff0000',
+            primary: '#0a84ff',
+            text: '#ffffff',
+        },
+    },
+}));
+
+// @/lib/utils (cn utility)
+jest.mock('@/lib/utils', () => ({
+    cn: (...args) => args.filter(Boolean).join(' '),
+}));
+
+// class-variance-authority
+jest.mock('class-variance-authority', () => ({
+    cva: () => () => '',
+}));
+
+// @rn-primitives/slot
+jest.mock('@rn-primitives/slot', () => {
+    const React = require('react');
+    const { View, Text } = require('react-native');
+    return {
+        View: (props) => React.createElement(View, props),
+        Text: (props) => React.createElement(Text, props),
+    };
+});
+
+// @rn-primitives/separator
+jest.mock('@rn-primitives/separator', () => {
+    const React = require('react');
+    const { View } = require('react-native');
+    return {
+        Root: (props) => React.createElement(View, props),
+    };
+});
+
+// @rn-primitives/alert-dialog
+jest.mock('@rn-primitives/alert-dialog', () => {
+    const React = require('react');
+    const { View, Text, Pressable } = require('react-native');
+    return {
+        Root: ({ children, open }) => open ? React.createElement(View, null, children) : null,
+        Trigger: (props) => React.createElement(Pressable, props),
+        Portal: ({ children }) => React.createElement(React.Fragment, null, children),
+        Overlay: (props) => React.createElement(View, props),
+        Content: (props) => React.createElement(View, props),
+        Title: (props) => React.createElement(Text, props),
+        Description: (props) => React.createElement(Text, props),
+        Action: (props) => React.createElement(Pressable, props),
+        Cancel: (props) => React.createElement(Pressable, props),
+    };
+});
+
+// @rn-primitives/portal
+jest.mock('@rn-primitives/portal', () => {
+    return {
+        PortalHost: () => null,
+    };
+});
+
+// @/global.css — no-op
+jest.mock('@/global.css', () => ({}));

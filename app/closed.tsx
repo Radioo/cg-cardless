@@ -1,24 +1,14 @@
-import {StyleSheet} from 'react-native';
+import { View } from 'react-native';
 
-import {ThemedText} from '@/components/themed-text';
-import {ThemedView} from '@/components/themed-view';
+import { Text } from '@/components/ui/text';
 
 export default function ClosedScreen() {
     window.close();
 
     return (
-        <ThemedView style={styles.container}>
-            <ThemedText type="title">Done</ThemedText>
-            <ThemedText>You can close this page now.</ThemedText>
-        </ThemedView>
+        <View className="flex-1 items-center justify-center gap-3 bg-background">
+            <Text variant="h1">Done</Text>
+            <Text>You can close this page now.</Text>
+        </View>
     );
 }
-
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        gap: 12,
-    },
-});

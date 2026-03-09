@@ -1,4 +1,7 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
+import '@/global.css';
+
+import { Theme, ThemeProvider } from '@react-navigation/native';
+import { PortalHost } from '@rn-primitives/portal';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
@@ -8,23 +11,35 @@ import { useEffect, useState } from 'react';
 import 'react-native-reanimated';
 
 import { GlobalErrorBoundary } from '@/components/global-error-boundary';
-import { Colors } from '@/constants/theme';
-import { useColorScheme } from '@/hooks/use-color-scheme';
+import { NAV_THEME } from '@/lib/theme';
+import { useColorScheme } from '@/lib/use-color-scheme';
 
-const lightTheme = {
-    ...DefaultTheme,
-    colors: { ...DefaultTheme.colors, background: Colors.light.background, card: Colors.light.background },
+const LIGHT_THEME: Theme = {
+    dark: false,
+    fonts: {
+        regular: { fontFamily: 'System', fontWeight: '400' },
+        medium: { fontFamily: 'System', fontWeight: '500' },
+        bold: { fontFamily: 'System', fontWeight: '700' },
+        heavy: { fontFamily: 'System', fontWeight: '900' },
+    },
+    colors: NAV_THEME.light,
 };
 
-const darkTheme = {
-    ...DarkTheme,
-    colors: { ...DarkTheme.colors, background: Colors.dark.background, card: Colors.dark.background },
+const DARK_THEME: Theme = {
+    dark: true,
+    fonts: {
+        regular: { fontFamily: 'System', fontWeight: '400' },
+        medium: { fontFamily: 'System', fontWeight: '500' },
+        bold: { fontFamily: 'System', fontWeight: '700' },
+        heavy: { fontFamily: 'System', fontWeight: '900' },
+    },
+    colors: NAV_THEME.dark,
 };
 
 export default function RootLayout() {
     const [queryClient] = useState(() => new QueryClient());
-    const colorScheme = useColorScheme();
-    const theme = colorScheme === 'dark' ? darkTheme : lightTheme;
+    const { isDarkColorScheme } = useColorScheme();
+    const theme = isDarkColorScheme ? DARK_THEME : LIGHT_THEME;
 
     useEffect(() => {
         SystemUI.setBackgroundColorAsync(theme.colors.background);
@@ -57,7 +72,8 @@ export default function RootLayout() {
                         <Stack.Screen name="settings" />
                         <Stack.Screen name="closed" />
                     </Stack>
-                    <StatusBar style="auto" />
+                    <StatusBar style={isDarkColorScheme ? 'light' : 'dark'} />
+                    <PortalHost />
                 </ThemeProvider>
             </QueryClientProvider>
         </GlobalErrorBoundary>

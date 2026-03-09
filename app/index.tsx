@@ -1,40 +1,38 @@
-import {ActivityIndicator, StyleSheet} from 'react-native';
-import {useRouter} from 'expo-router';
-import {ThemedView} from '@/components/themed-view';
-import {QrScanner} from '@/components/qr-scanner';
-import {Banner} from '@/components/banner';
-import {ThemedButton} from '@/components/themed-button';
-import {useSavedCard} from '@/hooks/use-saved-card';
-import {closeApp} from '@/utils/close-app';
+import { View } from 'react-native';
+import { useRouter } from 'expo-router';
+
+import { Banner } from '@/components/banner';
+import { QrScanner } from '@/components/qr-scanner';
+import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Text } from '@/components/ui/text';
+import { useSavedCard } from '@/hooks/use-saved-card';
+import { closeApp } from '@/utils/close-app';
 
 export default function WelcomeScreen() {
-    const {data: savedCard, isLoading} = useSavedCard();
+    const { data: savedCard, isLoading } = useSavedCard();
     const router = useRouter();
 
     const hasCard = !!savedCard?.trim();
 
     if (isLoading) {
-        return <ThemedView style={styles.container}>
-            <ActivityIndicator />
-        </ThemedView>
+        return (
+            <View className="flex-1 items-center justify-center gap-2 bg-background p-5">
+                <Skeleton className="h-[300px] w-full" />
+            </View>
+        );
     }
 
     return (
-        <ThemedView style={styles.container}>
+        <View className="flex-1 items-center justify-center gap-2 bg-background p-5">
             {!hasCard && <Banner variant="warning" message="No card saved. Please go to Settings to add your card." />}
             <QrScanner cardId={savedCard ?? null} />
-            <ThemedButton variant="secondary" title="Settings" onPress={() => router.push('/settings')}/>
-            <ThemedButton variant="secondary" title="Test Close App" onPress={() => closeApp(router)}/>
-        </ThemedView>
+            <Button variant="secondary" onPress={() => router.push('/settings')}>
+                <Text>Settings</Text>
+            </Button>
+            <Button variant="secondary" onPress={() => closeApp(router)}>
+                <Text>Test Close App</Text>
+            </Button>
+        </View>
     );
 }
-
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: 20,
-        gap: 8,
-    },
-});

@@ -1,19 +1,18 @@
-import {useEffect} from 'react';
-import {ActivityIndicator, Platform, StyleSheet} from 'react-native';
-import {useLocalSearchParams, useRouter} from 'expo-router';
-import {ThemedText} from '@/components/themed-text';
-import {ThemedView} from '@/components/themed-view';
-import {ThemedButton} from '@/components/themed-button';
-import {useThemeColor} from '@/hooks/use-theme-color';
-import {useSubmitScan} from '@/hooks/use-submit-scan';
-import {ScanError} from '@/utils/scan';
-import {closeApp} from '@/utils/close-app';
+import { useEffect } from 'react';
+import { ActivityIndicator, View } from 'react-native';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Text } from '@/components/ui/text';
+import { useSubmitScan } from '@/hooks/use-submit-scan';
+import { ScanError } from '@/utils/scan';
+import { closeApp } from '@/utils/close-app';
 
 export default function ScanResultScreen() {
-    const {url, cardId} = useLocalSearchParams<{ url: string; cardId: string }>();
+    const { url, cardId } = useLocalSearchParams<{ url: string; cardId: string }>();
     const router = useRouter();
-    const errorColor = useThemeColor('error');
-    const {isPending, isSuccess, isError, error, refetch} = useSubmitScan(url, cardId);
+    const { isPending, isSuccess, isError, error, refetch } = useSubmitScan(url, cardId);
 
     useEffect(() => {
         if (isSuccess) {
@@ -23,54 +22,31 @@ export default function ScanResultScreen() {
     }, [isSuccess, router]);
 
     return (
-        <ThemedView style={styles.container}>
-            {isPending && <ActivityIndicator size="large"/>}
+        <View className="flex-1 items-center justify-center gap-4 bg-background p-5">
+            {isPending && <ActivityIndicator size="large" />}
             {isSuccess && (
                 <>
-                    <ThemedText type="title">Success</ThemedText>
-                    <ThemedText style={styles.body}>Request completed successfully.</ThemedText>
+                    <Text variant="h1">Success</Text>
+                    <Text className="text-center">Request completed successfully.</Text>
                 </>
             )}
             {isError && (
                 <>
-                    <ThemedText style={[styles.errorText, {color: errorColor}]}>
+                    <Text className="text-center text-destructive">
                         {error instanceof ScanError ? error.message : 'An unexpected error occurred'}
-                    </ThemedText>
-                    <ThemedView style={[styles.errorBox, {borderColor: errorColor}]}>
-                        <ThemedText style={[styles.errorDetail, {color: errorColor}]}>
-                            {error?.name}: {error?.message}
-                        </ThemedText>
-                    </ThemedView>
-                    <ThemedButton title="Retry" onPress={() => refetch()}/>
+                    </Text>
+                    <Card className="w-full">
+                        <CardContent>
+                            <Text variant="code" className="text-destructive">
+                                {error?.name}: {error?.message}
+                            </Text>
+                        </CardContent>
+                    </Card>
+                    <Button onPress={() => refetch()}>
+                        <Text>Retry</Text>
+                    </Button>
                 </>
             )}
-        </ThemedView>
+        </View>
     );
 }
-
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: 20,
-        gap: 16,
-    },
-    body: {
-        textAlign: 'center',
-    },
-    errorText: {
-        textAlign: 'center',
-        fontSize: 16,
-    },
-    errorBox: {
-        borderWidth: 1,
-        borderRadius: 8,
-        padding: 12,
-        width: '100%',
-    },
-    errorDetail: {
-        fontSize: 13,
-        fontFamily: Platform.OS === 'web' ? 'monospace' : undefined,
-    },
-});

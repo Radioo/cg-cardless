@@ -1,15 +1,15 @@
-import {ActivityIndicator, Platform, StyleSheet, View} from 'react-native';
-import {useCallback, useRef, useState} from 'react';
-import {BarcodeScanningResult, CameraType, CameraView, useCameraPermissions} from 'expo-camera';
-import {useRouter} from 'expo-router';
-import {useFocusEffect, useIsFocused} from '@react-navigation/native';
-import {ThemedText} from '@/components/themed-text';
-import {ThemedButton} from '@/components/themed-button';
-import {useThemeColor} from '@/hooks/use-theme-color';
+import { ActivityIndicator, Platform, View } from 'react-native';
+import { useCallback, useRef, useState } from 'react';
+import { BarcodeScanningResult, CameraType, CameraView, useCameraPermissions } from 'expo-camera';
+import { useRouter } from 'expo-router';
+import { useFocusEffect, useIsFocused } from '@react-navigation/native';
+
+import { Button } from '@/components/ui/button';
+import { Text } from '@/components/ui/text';
 
 const QR_PATTERN = /^https:\/\/.+\/sppass\/[a-zA-Z0-9]{64}$/;
 
-export function QrScanner({cardId}: { cardId: string | null }) {
+export function QrScanner({ cardId }: { cardId: string | null }) {
     const [facing, setFacing] = useState<CameraType>('back');
     const [permission, requestPermission] = useCameraPermissions();
     const [validationError, setValidationError] = useState<string | null>(null);
@@ -17,7 +17,6 @@ export function QrScanner({cardId}: { cardId: string | null }) {
     const [cameraError, setCameraError] = useState<string | null>(null);
     const navigated = useRef(false);
     const router = useRouter();
-    const errorColor = useThemeColor('error');
     const isFocused = useIsFocused();
     const cameraActive = Platform.OS === 'web' || isFocused;
 
@@ -41,7 +40,7 @@ export function QrScanner({cardId}: { cardId: string | null }) {
         }
 
         navigated.current = true;
-        router.push({pathname: '/scan-result', params: {url: result.data, cardId}});
+        router.push({ pathname: '/scan-result', params: { url: result.data, cardId } });
     }
 
     function toggleCameraFacing() {
@@ -51,16 +50,18 @@ export function QrScanner({cardId}: { cardId: string | null }) {
     }
 
     if (!permission) {
-        return <ActivityIndicator/>;
+        return <ActivityIndicator />;
     }
 
     if (!permission.granted) {
         return (
             <>
-                <ThemedText style={styles.body}>
+                <Text className="mt-3 text-center">
                     Missing camera permission.
-                </ThemedText>
-                <ThemedButton title="Grant permission" onPress={requestPermission}/>
+                </Text>
+                <Button onPress={requestPermission}>
+                    <Text>Grant permission</Text>
+                </Button>
             </>
         );
     }
@@ -68,55 +69,35 @@ export function QrScanner({cardId}: { cardId: string | null }) {
     return (
         <>
             {cameraActive && (
-                <View style={styles.cameraContainer}>
+                <View className="h-[300px] w-full items-center justify-center overflow-hidden">
                     <CameraView
                         key={facing}
                         facing={facing}
-                        style={styles.cameraView}
-                        barcodeScannerSettings={{barcodeTypes: ['qr']}}
+                        style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
+                        barcodeScannerSettings={{ barcodeTypes: ['qr'] }}
                         onBarcodeScanned={handleBarcodeScanned}
                         onCameraReady={() => setCameraReady(true)}
                         onMountError={(e) => setCameraError(e.message)}
                     />
-                    {!cameraReady && !cameraError && <ActivityIndicator style={styles.cameraOverlay}/>}
+                    {!cameraReady && !cameraError && <ActivityIndicator />}
                     {cameraError && (
-                        <ThemedText style={[styles.cameraOverlay, {color: errorColor}]}>
+                        <Text className="text-center text-destructive">
                             Failed to start camera: {cameraError}
-                        </ThemedText>
+                        </Text>
                     )}
                 </View>
             )}
             {validationError && (
                 <>
-                    <ThemedText style={[styles.errorText, {color: errorColor}]}>{validationError}</ThemedText>
-                    <ThemedButton title="Clear" variant="secondary" onPress={() => setValidationError(null)}/>
+                    <Text className="text-center text-sm text-destructive">{validationError}</Text>
+                    <Button variant="secondary" onPress={() => setValidationError(null)}>
+                        <Text>Clear</Text>
+                    </Button>
                 </>
             )}
-            <ThemedButton title="Flip camera" variant="secondary" onPress={toggleCameraFacing}/>
+            <Button variant="secondary" onPress={toggleCameraFacing}>
+                <Text>Flip camera</Text>
+            </Button>
         </>
     );
 }
-
-const styles = StyleSheet.create({
-    body: {
-        marginTop: 12,
-        textAlign: 'center',
-    },
-    cameraContainer: {
-        width: '100%',
-        height: 300,
-        overflow: 'hidden',
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    cameraView: {
-        ...StyleSheet.absoluteFillObject,
-    },
-    cameraOverlay: {
-        textAlign: 'center',
-    },
-    errorText: {
-        textAlign: 'center',
-        fontSize: 14,
-    },
-});

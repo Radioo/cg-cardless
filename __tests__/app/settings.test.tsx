@@ -8,10 +8,6 @@ jest.mock('@expo/vector-icons', () => ({
     Ionicons: 'Ionicons',
 }));
 
-jest.mock('@/components/themed-text-input', () => ({
-    ThemedTextInput: 'ThemedTextInput',
-}));
-
 beforeEach(() => {
     jest.clearAllMocks();
 });

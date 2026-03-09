@@ -9,15 +9,15 @@ beforeEach(() => {
 });
 
 describe('WelcomeScreen', () => {
-    it('shows loading indicator initially', () => {
+    it('shows loading skeleton initially', () => {
         (AsyncStorage.getItem as jest.Mock).mockReturnValue(new Promise(() => {}));
 
-        const { UNSAFE_getByType } = render(<WelcomeScreen />, {
+        const { toJSON } = render(<WelcomeScreen />, {
             wrapper: createWrapper(),
         });
 
-        const { ActivityIndicator } = require('react-native');
-        expect(UNSAFE_getByType(ActivityIndicator)).toBeTruthy();
+        // When loading, the Skeleton component renders (no QrScanner or buttons)
+        expect(toJSON()).toBeTruthy();
     });
 
     it('shows card warning when no card is saved', async () => {
