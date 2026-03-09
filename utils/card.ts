@@ -317,6 +317,9 @@ export function validateAndConvertCard(input: string): string {
     const formatType = getCardFormatType(cleaned);
 
     if (formatType === 'card_id') {
+        if (!cleaned.startsWith(MAGSTRIPE_PREFIX) && !cleaned.startsWith(FELICA_PREFIX)) {
+            throw new CardConversionError('Unknown card type');
+        }
         return cleaned;
     }
 
