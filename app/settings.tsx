@@ -78,7 +78,7 @@ export default function SettingsScreen() {
             className="flex-1"
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         >
-            <ScrollView contentContainerClassName="grow">
+            <ScrollView contentContainerClassName="grow" keyboardShouldPersistTaps="handled">
                 <View className="flex-1 items-center justify-center gap-6 bg-background p-5">
                     <Text variant="h1">Settings</Text>
 
