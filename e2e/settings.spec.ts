@@ -24,8 +24,6 @@ test.describe('Settings page', () => {
     });
 
     test('Save Card saves and displays card info', async ({page}) => {
-        page.on('dialog', (dialog) => dialog.accept());
-
         const input = page.getByPlaceholder('Enter your card');
         await input.fill('02FE000000000001');
         await page.locator('[tabindex="0"]', {hasText: 'Save Card'}).click();
@@ -47,12 +45,13 @@ test.describe('Settings page', () => {
     });
 
     test('warning banner disappears after saving a card', async ({page}) => {
-        page.on('dialog', (dialog) => dialog.accept());
-
         // Save a card
         await page.getByPlaceholder('Enter your card').fill('02FE000000000001');
         await page.locator('[tabindex="0"]', {hasText: 'Save Card'}).click();
         await expect(page.getByText('Card ID', {exact: true})).toBeVisible();
+
+        // Dismiss the save confirmation dialog
+        await page.locator('[tabindex="0"]', {hasText: 'OK'}).click();
 
         // Navigate home
         await page.locator('[tabindex="0"]', {hasText: 'Back'}).click();
