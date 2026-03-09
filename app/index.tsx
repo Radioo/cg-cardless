@@ -7,7 +7,6 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Text } from '@/components/ui/text';
 import { useSavedCard } from '@/hooks/use-saved-card';
-import { closeApp } from '@/utils/close-app';
 
 export default function WelcomeScreen() {
     const { data: savedCard, isLoading } = useSavedCard();
@@ -29,9 +28,6 @@ export default function WelcomeScreen() {
             <QrScanner cardId={savedCard ?? null} />
             <Button variant="secondary" onPress={() => router.push('/settings')}>
                 <Text>Settings</Text>
-            </Button>
-            <Button variant="secondary" onPress={() => closeApp(router)}>
-                <Text>Test Close App</Text>
             </Button>
         </View>
     );
