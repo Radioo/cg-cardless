@@ -45,9 +45,13 @@ module.exports = {
                 },
             },
             borderRadius: {
+                full: '0',
+                '2xl': '0',
+                xl: '0',
                 lg: '0',
                 md: '0',
                 sm: '0',
+                DEFAULT: '0',
             },
         },
     },
