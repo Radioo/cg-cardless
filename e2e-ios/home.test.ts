@@ -14,6 +14,7 @@ describe('Home', () => {
     });
 
     it('shows Flip camera button', async () => {
+        await device.launchApp({ newInstance: true, delete: true, permissions: { camera: 'YES' } });
         await expect(element(by.text('Flip camera'))).toBeVisible();
     });
 });

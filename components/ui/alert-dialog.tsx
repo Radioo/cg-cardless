@@ -6,6 +6,9 @@ import * as AlertDialogPrimitive from '@rn-primitives/alert-dialog';
 import * as React from 'react';
 import { Platform, View, type ViewProps } from 'react-native';
 import { FadeIn, FadeOut } from 'react-native-reanimated';
+import { FullWindowOverlay as RNFullWindowOverlay } from 'react-native-screens';
+
+const FullWindowOverlay = Platform.OS === 'ios' ? RNFullWindowOverlay : React.Fragment;
 
 const AlertDialog = AlertDialogPrimitive.Root;
 
@@ -22,7 +25,7 @@ function AlertDialogOverlay({
     children?: React.ReactNode;
   }) {
     return (
-        <>
+        <FullWindowOverlay>
             <AlertDialogPrimitive.Overlay
                 className={cn(
                     'absolute bottom-0 left-0 right-0 top-0 z-50 flex items-center justify-center bg-black/50 p-2',
@@ -38,7 +41,7 @@ function AlertDialogOverlay({
                     <>{children}</>
                 </NativeOnlyAnimatedView>
             </AlertDialogPrimitive.Overlay>
-        </>
+        </FullWindowOverlay>
     );
 }
 

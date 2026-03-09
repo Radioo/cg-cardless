@@ -43,31 +43,27 @@ jobs:
           HASH=$(npx @expo/fingerprint fingerprint:generate --platform ios | python3 -c "import json,sys; print(json.load(sys.stdin)['hash'])")
           echo "hash=$HASH" >> $GITHUB_OUTPUT
 
-      - name: Check for cached simulator build
-        id: cached-app
-        uses: actions/cache@v5
-        with:
-          path: ios/build/Build/Products/Release-iphonesimulator/CGCardless.app
-          key: ios-detox-app-${{ steps.fingerprint.outputs.hash }}
-
       - name: Expo Prebuild
-        if: steps.cached-app.outputs.cache-hit != 'true'
         run: npx expo prebuild --platform ios
 
       - name: Cache CocoaPods
-        if: steps.cached-app.outputs.cache-hit != 'true'
         id: cache-pods
         uses: actions/cache@v5
         with:
           path: ios/Pods
-          key: pods-${{ hashFiles('ios/Podfile.lock') }}
+          key: pods-${{ steps.fingerprint.outputs.hash }}
 
       - name: Install CocoaPods
-        if: steps.cached-app.outputs.cache-hit != 'true' && steps.cache-pods.outputs.cache-hit != 'true'
+        if: steps.cache-pods.outputs.cache-hit != 'true'
         run: cd ios && pod install
 
+      - name: Cache DerivedData
+        uses: actions/cache@v5
+        with:
+          path: ios/build
+          key: ios-derived-data-${{ steps.fingerprint.outputs.hash }}
+
       - name: Build for Detox
-        if: steps.cached-app.outputs.cache-hit != 'true'
         run: npm run test:e2e:ios:build
 
       - name: Upload build logs on failure
