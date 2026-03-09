@@ -9,6 +9,8 @@ appId: com.radi0.cgcardless
 # Enter a valid hex card ID that doesn't start with E004 or 0 (unknown card type)
 - tapOn: "Enter your card"
 - inputText: "AAAAAAAAAAAAAAAA"
+- tapOn:
+    point: "50%,15%"
 - tapOn: "Save Card"
 
 # Should show error for unknown card type (not magstripe E004 or FeliCa 0x prefix)

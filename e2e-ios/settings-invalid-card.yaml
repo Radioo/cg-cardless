@@ -17,6 +17,8 @@ appId: com.radi0.cgcardless
 # Try saving a card that's too short
 - tapOn: "Enter your card"
 - inputText: "ABC"
+- tapOn:
+    point: "50%,15%"
 - tapOn: "Save Card"
 
 # Verify error dialog for short card
@@ -28,6 +30,8 @@ appId: com.radi0.cgcardless
 - tapOn: "Enter your card"
 - eraseText: 3
 - inputText: "IIIIIIIIIIIIIIII"
+- tapOn:
+    point: "50%,15%"
 - tapOn: "Save Card"
 
 # Verify error dialog for unknown format

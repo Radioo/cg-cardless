@@ -7,6 +7,8 @@ appId: com.radi0.cgcardless
 - tapOn: "Settings"
 - tapOn: "Enter your card"
 - inputText: "02FE000000000001"
+- tapOn:
+    point: "50%,15%"
 - tapOn: "Save Card"
 - assertVisible: "Saved"
 - tapOn: "OK"

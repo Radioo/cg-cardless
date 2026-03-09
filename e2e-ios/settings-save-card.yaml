@@ -9,6 +9,8 @@ appId: com.radi0.cgcardless
 # Enter a valid Card ID (FeliCa type, starts with 02FE)
 - tapOn: "Enter your card"
 - inputText: "02FE000000000001"
+- tapOn:
+    point: "50%,15%"
 
 # Save the card
 - tapOn: "Save Card"
