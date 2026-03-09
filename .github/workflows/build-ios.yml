@@ -43,19 +43,10 @@ jobs:
           HASH=$(npx @expo/fingerprint fingerprint:generate --platform ios | python3 -c "import json,sys; print(json.load(sys.stdin)['hash'])")
           echo "hash=$HASH" >> $GITHUB_OUTPUT
 
-      - name: Check for cached archive
-        id: cached-archive
-        uses: actions/cache@v5
-        with:
-          path: build-cache/${{ inputs.configuration }}/CGCardless.xcarchive
-          key: ios-archive-${{ inputs.configuration }}-${{ steps.fingerprint.outputs.hash }}
-
       - name: Expo Prebuild
-        if: steps.cached-archive.outputs.cache-hit != 'true'
         run: npx expo prebuild --platform ios
 
       - name: Cache CocoaPods
-        if: steps.cached-archive.outputs.cache-hit != 'true'
         id: cache-pods
         uses: actions/cache@v5
         with:
@@ -63,11 +54,18 @@ jobs:
           key: pods-${{ hashFiles('ios/Podfile.lock') }}
 
       - name: Install CocoaPods
-        if: steps.cached-archive.outputs.cache-hit != 'true' && steps.cache-pods.outputs.cache-hit != 'true'
+        if: steps.cache-pods.outputs.cache-hit != 'true'
         run: cd ios && pod install
 
+      - name: Cache DerivedData
+        uses: actions/cache@v5
+        with:
+          path: DerivedData
+          key: ios-derived-data-${{ inputs.configuration }}-${{ steps.fingerprint.outputs.hash }}-${{ github.sha }}
+          restore-keys: |
+            ios-derived-data-${{ inputs.configuration }}-${{ steps.fingerprint.outputs.hash }}-
+
       - name: Build Archive (Unsigned)
-        if: steps.cached-archive.outputs.cache-hit != 'true'
         run: |
           xcodebuild -workspace ios/CGCardless.xcworkspace \
             -scheme CGCardless \
@@ -78,18 +76,6 @@ jobs:
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGN_IDENTITY="" \
             archive
-
-      - name: Cache built archive
-        if: steps.cached-archive.outputs.cache-hit != 'true'
-        run: |
-          mkdir -p build-cache/${{ inputs.configuration }}
-          cp -R ios/buildArchive/CGCardless.xcarchive build-cache/${{ inputs.configuration }}/CGCardless.xcarchive
-
-      - name: Restore archive from cache
-        if: steps.cached-archive.outputs.cache-hit == 'true'
-        run: |
-          mkdir -p ios/buildArchive
-          cp -R build-cache/${{ inputs.configuration }}/CGCardless.xcarchive ios/buildArchive/CGCardless.xcarchive
 
       - name: Upload build logs on failure
         if: failure()
