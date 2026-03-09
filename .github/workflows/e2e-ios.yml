@@ -1,0 +1,117 @@
+name: E2E iOS
+
+on:
+  workflow_dispatch:
+
+jobs:
+  e2e:
+    runs-on: macos-latest
+
+    env:
+      DERIVED_DATA_PATH: ${{ github.workspace }}/DerivedData
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Set up ccache
+        uses: hendrikmuhs/ccache-action@v1
+        with:
+          key: ios-ccache-Debug
+
+      - name: Cache node_modules
+        id: cache-modules
+        uses: actions/cache@v4
+        with:
+          path: node_modules
+          key: node-modules-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+
+      - name: Install dependencies
+        if: steps.cache-modules.outputs.cache-hit != 'true'
+        run: npm ci
+
+      - name: Expo Prebuild
+        run: npx expo prebuild --platform ios
+
+      - name: Cache CocoaPods
+        id: cache-pods
+        uses: actions/cache@v5
+        with:
+          path: ios/Pods
+          key: pods-${{ hashFiles('ios/Podfile.lock') }}
+
+      - name: Install CocoaPods
+        if: steps.cache-pods.outputs.cache-hit != 'true'
+        run: cd ios && pod install
+
+      - name: Cache DerivedData
+        uses: actions/cache@v5
+        with:
+          path: ${{ env.DERIVED_DATA_PATH }}
+          key: derived-data-e2e-${{ hashFiles('ios/Podfile.lock') }}-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            derived-data-e2e-${{ hashFiles('ios/Podfile.lock') }}-
+            derived-data-e2e-
+
+      - name: Build for Simulator
+        env:
+          USE_CCACHE: "1"
+        run: |
+          xcodebuild -workspace ios/CGCardless.xcworkspace \
+            -scheme CGCardless \
+            -configuration Debug \
+            -sdk iphonesimulator \
+            -derivedDataPath ${{ env.DERIVED_DATA_PATH }} \
+            -destination 'platform=iOS Simulator,name=iPhone 16,OS=latest' \
+            CODE_SIGNING_ALLOWED=NO \
+            build
+
+      - name: Upload build logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: xcodebuild-logs
+          path: ${{ env.DERIVED_DATA_PATH }}/Logs/Build/
+
+      - name: Install Maestro
+        run: |
+          curl -fsSL "https://get.maestro.mobile.dev" | bash
+          echo "$HOME/.maestro/bin" >> $GITHUB_PATH
+
+      - name: Boot Simulator
+        run: |
+          DEVICE=$(xcrun simctl list devices available -j | python3 -c "
+          import json, sys
+          data = json.load(sys.stdin)
+          for runtime, devices in data['devices'].items():
+              if 'iOS' in runtime:
+                  for d in devices:
+                      if 'iPhone 16' in d['name']:
+                          print(d['udid'])
+                          sys.exit(0)
+          sys.exit(1)
+          ")
+          xcrun simctl boot "$DEVICE"
+          echo "DEVICE_UDID=$DEVICE" >> $GITHUB_ENV
+
+      - name: Install App on Simulator
+        run: |
+          APP_PATH=$(find ${{ env.DERIVED_DATA_PATH }}/Build/Products/Debug-iphonesimulator -name "*.app" -type d | head -1)
+          xcrun simctl install "$DEVICE_UDID" "$APP_PATH"
+
+      - name: Run Maestro Tests
+        run: |
+          maestro --device "$DEVICE_UDID" test e2e-ios/
+
+      - name: Upload Maestro logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: maestro-logs
+          path: ~/.maestro/tests/
