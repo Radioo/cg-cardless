@@ -2,4 +2,4 @@ appId: com.radi0.cgcardless
 ---
 - launchApp
 - assertVisible: "Settings"
-- assertVisible: "No card saved"
+- assertVisible: "No card saved. Please go to Settings to add your card."

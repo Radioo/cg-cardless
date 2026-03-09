@@ -7,9 +7,6 @@ jobs:
   e2e:
     runs-on: macos-latest
 
-    env:
-      DERIVED_DATA_PATH: ${{ github.workspace }}/DerivedData
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -31,6 +28,61 @@ jobs:
         if: steps.cache-modules.outputs.cache-hit != 'true'
         run: npm ci
 
+      - name: Calculate native fingerprint
+        id: fingerprint
+        run: |
+          HASH=$(npx @expo/fingerprint fingerprint:generate --platform ios | python3 -c "import json,sys; print(json.load(sys.stdin)['hash'])")
+          echo "hash=$HASH" >> $GITHUB_OUTPUT
+
+      - name: Check for cached simulator build
+        id: cached-app
+        uses: actions/cache@v5
+        with:
+          path: build-cache/CGCardless.app
+          key: ios-sim-app-${{ steps.fingerprint.outputs.hash }}
+
+      - name: Expo Prebuild
+        if: steps.cached-app.outputs.cache-hit != 'true'
+        run: npx expo prebuild --platform ios
+
+      - name: Cache CocoaPods
+        if: steps.cached-app.outputs.cache-hit != 'true'
+        id: cache-pods
+        uses: actions/cache@v5
+        with:
+          path: ios/Pods
+          key: pods-${{ hashFiles('ios/Podfile.lock') }}
+
+      - name: Install CocoaPods
+        if: steps.cached-app.outputs.cache-hit != 'true' && steps.cache-pods.outputs.cache-hit != 'true'
+        run: cd ios && pod install
+
+      - name: Build for Simulator
+        if: steps.cached-app.outputs.cache-hit != 'true'
+        run: |
+          xcodebuild -workspace ios/CGCardless.xcworkspace \
+            -scheme CGCardless \
+            -configuration Release \
+            -sdk iphonesimulator \
+            -derivedDataPath DerivedData \
+            -destination 'platform=iOS Simulator,name=iPhone 16,OS=latest' \
+            CODE_SIGNING_ALLOWED=NO \
+            build
+
+      - name: Cache built app
+        if: steps.cached-app.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p build-cache
+          APP_PATH=$(find DerivedData/Build/Products/Release-iphonesimulator -name "*.app" -type d | head -1)
+          cp -R "$APP_PATH" build-cache/CGCardless.app
+
+      - name: Upload build logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: xcodebuild-logs
+          path: DerivedData/Logs/Build/
+
       - name: Boot Simulator
         run: |
           DEVICE=$(xcrun simctl list devices available -j | python3 -c "
@@ -44,7 +96,7 @@ jobs:
                           sys.exit(0)
           sys.exit(1)
           ")
-          xcrun simctl boot "$DEVICE" &
+          xcrun simctl boot "$DEVICE"
           echo "DEVICE_UDID=$DEVICE" >> $GITHUB_ENV
 
       - name: Install Maestro
@@ -52,55 +104,11 @@ jobs:
           curl -fsSL "https://get.maestro.mobile.dev" | bash
           echo "$HOME/.maestro/bin" >> $GITHUB_PATH
 
-      - name: Expo Prebuild
-        run: npx expo prebuild --platform ios
-
-      - name: Cache CocoaPods
-        id: cache-pods
-        uses: actions/cache@v5
-        with:
-          path: ios/Pods
-          key: pods-${{ hashFiles('ios/Podfile.lock') }}
-
-      - name: Install CocoaPods
-        if: steps.cache-pods.outputs.cache-hit != 'true'
-        run: cd ios && pod install
-
-      - name: Cache DerivedData
-        uses: actions/cache@v5
-        with:
-          path: ${{ env.DERIVED_DATA_PATH }}
-          key: derived-data-e2e-${{ hashFiles('ios/Podfile.lock') }}-${{ hashFiles('package-lock.json') }}
-          restore-keys: |
-            derived-data-e2e-${{ hashFiles('ios/Podfile.lock') }}-
-            derived-data-e2e-
-
-      - name: Build for Simulator
-        run: |
-          xcodebuild -workspace ios/CGCardless.xcworkspace \
-            -scheme CGCardless \
-            -configuration Release \
-            -sdk iphonesimulator \
-            -derivedDataPath ${{ env.DERIVED_DATA_PATH }} \
-            -destination 'platform=iOS Simulator,name=iPhone 16,OS=latest' \
-            CODE_SIGNING_ALLOWED=NO \
-            build
-
-      - name: Upload build logs on failure
-        if: failure()
-        uses: actions/upload-artifact@v7
-        with:
-          name: xcodebuild-logs
-          path: ${{ env.DERIVED_DATA_PATH }}/Logs/Build/
-
       - name: Install App on Simulator
-        run: |
-          APP_PATH=$(find ${{ env.DERIVED_DATA_PATH }}/Build/Products/Release-iphonesimulator -name "*.app" -type d | head -1)
-          xcrun simctl install "$DEVICE_UDID" "$APP_PATH"
+        run: xcrun simctl install "$DEVICE_UDID" build-cache/CGCardless.app
 
       - name: Run Maestro Tests
-        run: |
-          maestro --device "$DEVICE_UDID" test e2e-ios/
+        run: maestro --device "$DEVICE_UDID" test e2e-ios/
 
       - name: Upload Maestro logs on failure
         if: failure()
