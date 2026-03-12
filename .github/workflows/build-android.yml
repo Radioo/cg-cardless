@@ -54,15 +54,34 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
 
       - name: Setup ccache
+        id: ccache
         uses: hendrikmuhs/ccache-action@v1.2
         with:
-          key: android-ccache-${{ inputs.profile }}
+          key: android-ccache-${{ inputs.profile }}-${{ hashFiles('package-lock.json') }}
+          restore-keys: android-ccache-${{ inputs.profile }}-
           max-size: 2G
+
+      - name: Configure ccache for Android NDK
+        run: |
+          mkdir -p ~/.gradle/init.d
+          cat > ~/.gradle/init.d/ccache.gradle << 'EOF'
+          allprojects {
+            afterEvaluate {
+              extensions.findByName('android')?.defaultConfig?.externalNativeBuild?.cmake?.with {
+                arguments += [
+                  '-DCMAKE_C_COMPILER_LAUNCHER=ccache',
+                  '-DCMAKE_CXX_COMPILER_LAUNCHER=ccache'
+                ]
+              }
+            }
+          }
+          EOF
 
       - name: Build
         env:
           GRADLE_OPTS: "-Dorg.gradle.caching=true -Dorg.gradle.parallel=true -Dorg.gradle.logging.stacktrace=all"
           EAS_BUILD_RUNNER: "eas-build"
+          CCACHE_DIR: ${{ steps.ccache.outputs.ccache-dir }}
           CCACHE_COMPILERCHECK: content
           CCACHE_SLOPPINESS: file_macro,time_macros,include_file_mtime,include_file_ctime,pch_defines
           CCACHE_DEPEND: "true"
