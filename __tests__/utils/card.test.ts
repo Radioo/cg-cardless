@@ -32,7 +32,7 @@ describe('parseCardFormat', () => {
 
     it('throws on unknown format (16 chars but invalid)', () => {
     // 'I', 'O', 'Q', 'V' are not in the display ID alphabet and not hex
-        expect(() => parseCardFormat('IIIIIIIIIIIIIIII')).toThrow('Unknown card format');
+        expect(() => parseCardFormat('IIIIIIIIIIIIIIII')).toThrow('Unknown card type');
     });
 
     it('normalizes whitespace and case', () => {

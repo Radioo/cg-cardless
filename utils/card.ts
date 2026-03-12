@@ -135,7 +135,7 @@ export function parseCardFormat(input: string): CardFormatType {
         return 'card_id';
     }
 
-    throw new CardConversionError('Unknown card format');
+    throw new CardConversionError('Unknown card type');
 }
 
 export function cardIdFromDisplayId(displayId: string): string {
