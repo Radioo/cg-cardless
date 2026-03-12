@@ -1,6 +1,6 @@
-import {useQuery, useMutation, useQueryClient} from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {validateAndConvertCard} from '@/utils/card';
+import { validateAndConvertCard } from '@/utils/card';
 
 const CARD_STORAGE_KEY = 'saved_card';
 const CARD_QUERY_KEY = ['saved_card'] as const;

@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Text } from '@/components/ui/text';
 import { CardSettings } from '@/components/card-settings';
 import { FelicaSettings } from '@/components/felica-settings';
+import { useSavedCard } from '@/hooks/use-saved-card';
 
 type DialogState = {
     open: boolean;
@@ -19,6 +20,7 @@ type DialogState = {
 
 export default function SettingsScreen() {
     const router = useRouter();
+    const { data: savedCard } = useSavedCard();
     const [dialog, setDialog] = useState<DialogState>({ open: false, title: '', message: '' });
 
     function showDialog(title: string, message: string) {
@@ -34,8 +36,8 @@ export default function SettingsScreen() {
                 <View className="flex-1 items-center justify-center gap-6 bg-background p-5">
                     <Text variant="h1">Settings</Text>
 
-                    <CardSettings showDialog={showDialog} />
-                    <FelicaSettings />
+                    <CardSettings savedCard={savedCard} showDialog={showDialog} />
+                    <FelicaSettings savedCard={savedCard} />
 
                     <Button variant="secondary" onPress={() => router.back()} testID="back-btn">
                         <Text>Back</Text>

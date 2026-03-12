@@ -21,7 +21,8 @@ CG Cardless is a React Native + Expo mobile/web app for "cardless login" in supp
 app/               # Expo Router screens (file-based routing)
 components/        # Reusable themed UI components
 hooks/             # Custom React hooks
-constants/         # Theme colors, fonts
+constants/         # Fonts, navigation theme colors
+lib/               # NativeWind utilities (cn helper)
 utils/             # Card encoding (3DES), scan submission, close-app helper
 modules/           # Custom Expo native modules (exit-app, felica-emulator)
 __tests__/         # Jest unit tests (mirrors source structure)
@@ -47,11 +48,10 @@ public/            # Static web assets (favicon, apple-touch-icon)
 ## Code Conventions
 
 - **4-space indentation**, `curly` always required, `1tbs` brace style (ESLint enforced)
-- **`@/` path alias** for all internal imports (e.g., `@/components/themed-button`)
+- **`@/` path alias** for all internal imports (e.g., `@/components/ui/button`)
 - **Named exports** for components/hooks; **default exports** only for route screens (Expo Router requirement)
-- **`StyleSheet.create()`** at module level for all styles
-- **Platform-specific files:** `.web.ts` suffix for web overrides (e.g., `use-color-scheme.web.ts`)
-- **Themed components:** `ThemedText`, `ThemedView`, `ThemedButton`, `ThemedTextInput` — all use `useThemeColor()` for automatic light/dark support
+- **NativeWind/Tailwind CSS** for styling via `className` props
+- **UI primitives** in `components/ui/` (`Text`, `Button`, `Card`, etc.) built on `@rn-primitives` with NativeWind
 - **Custom error classes:** `CardConversionError`, `ScanError` extend `Error` with `.name` set
 
 ## Architecture Notes

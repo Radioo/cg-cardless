@@ -1,7 +1,6 @@
-import Ionicons from '@expo/vector-icons/Ionicons';
-import * as Clipboard from 'expo-clipboard';
+import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
-import { Platform, Pressable, ScrollView, View } from 'react-native';
+import { Pressable, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Badge } from '@/components/ui/badge';
@@ -9,6 +8,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Text } from '@/components/ui/text';
+import { Fonts } from '@/constants/fonts';
+import { useCopyFeedback } from '@/hooks/use-copy-feedback';
 import { type ErrorReport, formatReportAsText } from '@/utils/error-report';
 
 type ErrorScreenProps = {
@@ -16,28 +17,15 @@ type ErrorScreenProps = {
     onReset: () => void;
 };
 
-export function ErrorScreen({ report, onReset }: ErrorScreenProps) {
-    const [copied, setCopied] = useState(false);
+function ErrorScreen({ report, onReset }: ErrorScreenProps) {
+    const { copiedKey: copied, copy } = useCopyFeedback();
     const [stackOpen, setStackOpen] = useState(true);
     const [componentStackOpen, setComponentStackOpen] = useState(false);
     const [envOpen, setEnvOpen] = useState(false);
 
-    const handleCopy = async () => {
-        await Clipboard.setStringAsync(formatReportAsText(report));
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
-    };
-
-    const monoFont = Platform.select({
-        ios: 'Menlo',
-        android: 'monospace',
-        default: 'monospace',
-    });
-
     return (
         <SafeAreaView className="flex-1 bg-background">
             <ScrollView contentContainerClassName="p-4 pb-12">
-                {/* Header */}
                 <View className="flex-row items-center gap-2.5 rounded-t-lg bg-destructive p-4">
                     <Ionicons name="alert-circle" size={28} color="white" />
                     <Text className="shrink text-xl font-bold text-destructive-foreground">
@@ -50,40 +38,36 @@ export function ErrorScreen({ report, onReset }: ErrorScreenProps) {
                     </Badge>
                 </View>
 
-                {/* Error message */}
                 <Card className="mb-4">
                     <CardContent>
                         <Text>{report.errorMessage}</Text>
                     </CardContent>
                 </Card>
 
-                {/* Stack Trace */}
                 {report.stackTrace ? (
                     <CollapsibleSection
                         title="Stack Trace"
                         open={stackOpen}
                         onToggle={() => setStackOpen(!stackOpen)}
                     >
-                        <Text className="text-xs leading-[18px]" style={{ fontFamily: monoFont }}>
+                        <Text className="text-xs leading-[18px]" style={{ fontFamily: Fonts.mono }}>
                             {report.stackTrace}
                         </Text>
                     </CollapsibleSection>
                 ) : null}
 
-                {/* Component Stack */}
                 {report.componentStack ? (
                     <CollapsibleSection
                         title="Component Stack"
                         open={componentStackOpen}
                         onToggle={() => setComponentStackOpen(!componentStackOpen)}
                     >
-                        <Text className="text-xs leading-[18px]" style={{ fontFamily: monoFont }}>
+                        <Text className="text-xs leading-[18px]" style={{ fontFamily: Fonts.mono }}>
                             {report.componentStack}
                         </Text>
                     </CollapsibleSection>
                 ) : null}
 
-                {/* Environment */}
                 <CollapsibleSection
                     title="Environment"
                     open={envOpen}
@@ -96,9 +80,8 @@ export function ErrorScreen({ report, onReset }: ErrorScreenProps) {
                     <EnvRow label="Device" value={report.deviceName} />
                 </CollapsibleSection>
 
-                {/* Actions */}
                 <View className="mt-2 gap-2.5">
-                    <Button onPress={handleCopy}>
+                    <Button onPress={() => copy(formatReportAsText(report))}>
                         <Text>{copied ? 'Copied!' : 'Copy Error Report'}</Text>
                     </Button>
                     <Button variant="secondary" onPress={onReset}>
@@ -151,3 +134,5 @@ function EnvRow({ label, value }: EnvRowProps) {
         </View>
     );
 }
+
+export { ErrorScreen };

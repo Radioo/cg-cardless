@@ -1,4 +1,4 @@
-import { renderHook, waitFor } from '@testing-library/react-native';
+import { renderHook, act, waitFor } from '@testing-library/react-native';
 import { useSubmitScan } from '@/hooks/use-submit-scan';
 import { createWrapper } from '../helpers';
 
@@ -17,21 +17,48 @@ beforeEach(() => {
 describe('useSubmitScan', () => {
     it('submits scan and returns success', async () => {
         const { result } = renderHook(
-            () => useSubmitScan(TEST_URL, TEST_CARD_ID),
+            () => useSubmitScan(),
             { wrapper: createWrapper() },
         );
+
+        act(() => {
+            result.current.mutate({ url: TEST_URL, cardId: TEST_CARD_ID });
+        });
 
         await waitFor(() => expect(result.current.isSuccess).toBe(true));
         expect(global.fetch).toHaveBeenCalledWith(`${TEST_URL}/${TEST_CARD_ID}`);
     });
 
-    it('returns error when params are missing', async () => {
+    it('does not fetch until mutate is called', () => {
         const { result } = renderHook(
-            () => useSubmitScan(undefined, undefined),
+            () => useSubmitScan(),
             { wrapper: createWrapper() },
         );
 
+        expect(result.current.isIdle).toBe(true);
+        expect(result.current.isError).toBe(false);
+        expect(global.fetch).not.toHaveBeenCalled();
+    });
+
+    it('reports errors from failed requests', async () => {
+        (global.fetch as jest.Mock).mockImplementation(() =>
+            Promise.resolve({
+                ok: false,
+                status: 500,
+                json: () => Promise.resolve({}),
+            }),
+        );
+
+        const { result } = renderHook(
+            () => useSubmitScan(),
+            { wrapper: createWrapper() },
+        );
+
+        act(() => {
+            result.current.mutate({ url: TEST_URL, cardId: TEST_CARD_ID });
+        });
+
         await waitFor(() => expect(result.current.isError).toBe(true));
-        expect(result.current.error?.message).toBe('Missing scan parameters');
+        expect(result.current.error?.message).toMatch(/500/);
     });
 });

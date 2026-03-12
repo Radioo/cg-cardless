@@ -1,15 +1,10 @@
-import {useQuery} from '@tanstack/react-query';
-import {ScanError, submitScan} from '@/utils/scan';
+import { useMutation } from '@tanstack/react-query';
+import { submitScan } from '@/utils/scan';
 
-export function useSubmitScan(url: string | undefined, cardId: string | undefined) {
-    return useQuery({
-        queryKey: ['scan', url, cardId],
-        queryFn: () => {
-            if (!url || !cardId) {
-                throw new ScanError('Missing scan parameters');
-            }
-            return submitScan(url, cardId);
-        },
+export function useSubmitScan() {
+    return useMutation({
+        mutationFn: ({ url, cardId }: { url: string; cardId: string }) =>
+            submitScan(url, cardId),
         retry: false,
     });
 }

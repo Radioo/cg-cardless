@@ -41,13 +41,29 @@ describe('RootLayout', () => {
         expect(result).toBeTruthy();
     });
 
-    it('provides QueryClientProvider context', () => {
-        const result = render(<RootLayout />);
-        expect(result).toBeDefined();
-    });
-
     it('can be unmounted without errors', () => {
         const result = render(<RootLayout />);
         expect(() => result.unmount()).not.toThrow();
+    });
+
+    it('returns null while fonts are loading', () => {
+        const { useFonts } = require('expo-font');
+        (useFonts as jest.Mock).mockReturnValueOnce([false]);
+        const { toJSON } = render(<RootLayout />);
+        expect(toJSON()).toBeNull();
+    });
+
+    it('wraps content in GlobalErrorBoundary', () => {
+        const GlobalErrorBoundary = require('@/components/global-error-boundary').GlobalErrorBoundary;
+        const spy = jest.spyOn(GlobalErrorBoundary.prototype, 'render');
+        render(<RootLayout />);
+        expect(spy).toHaveBeenCalled();
+        spy.mockRestore();
+    });
+
+    it('sets system background color on mount', () => {
+        const SystemUI = require('expo-system-ui');
+        render(<RootLayout />);
+        expect(SystemUI.setBackgroundColorAsync).toHaveBeenCalled();
     });
 });

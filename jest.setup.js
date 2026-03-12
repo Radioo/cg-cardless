@@ -88,11 +88,25 @@ jest.mock('expo-constants', () => ({
     },
 }));
 
+// expo-font
+jest.mock('expo-font', () => ({
+    useFonts: jest.fn(() => [true]),
+    isLoaded: jest.fn(() => true),
+    loadAsync: jest.fn(),
+}));
+
 // @expo/vector-icons
 jest.mock('@expo/vector-icons/Ionicons', () => {
     const React = require('react');
     const { Text } = require('react-native');
     return (props) => React.createElement(Text, props, props.name);
+});
+jest.mock('@expo/vector-icons', () => {
+    const React = require('react');
+    const { Text } = require('react-native');
+    const Ionicons = (props) => React.createElement(Text, props, props.name);
+    Ionicons.font = { ionicons: 'ionicons' };
+    return { Ionicons };
 });
 
 // felica-emulator
@@ -130,8 +144,8 @@ jest.mock('nativewind', () => ({
     })),
 }));
 
-// @/lib/use-color-scheme (NativeWind wrapper)
-jest.mock('@/lib/use-color-scheme', () => ({
+// @/hooks/use-color-scheme (NativeWind wrapper)
+jest.mock('@/hooks/use-color-scheme', () => ({
     useColorScheme: jest.fn(() => ({
         colorScheme: 'light',
         isDarkColorScheme: false,
@@ -140,8 +154,8 @@ jest.mock('@/lib/use-color-scheme', () => ({
     })),
 }));
 
-// @/lib/theme
-jest.mock('@/lib/theme', () => ({
+// @/constants/theme
+jest.mock('@/constants/theme', () => ({
     NAV_THEME: {
         light: {
             background: '#ffffff',
@@ -162,8 +176,8 @@ jest.mock('@/lib/theme', () => ({
     },
 }));
 
-// @/lib/utils (cn utility)
-jest.mock('@/lib/utils', () => ({
+// @/utils/cn (cn utility)
+jest.mock('@/utils/cn', () => ({
     cn: (...args) => args.filter(Boolean).join(' '),
 }));
 
@@ -212,6 +226,14 @@ jest.mock('@rn-primitives/alert-dialog', () => {
 jest.mock('@rn-primitives/portal', () => {
     return {
         PortalHost: () => null,
+    };
+});
+
+// react-native-screens
+jest.mock('react-native-screens', () => {
+    const React = require('react');
+    return {
+        FullWindowOverlay: (props) => React.createElement(React.Fragment, null, props.children),
     };
 });
 

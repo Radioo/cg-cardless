@@ -29,7 +29,7 @@ describe('FelicaEmulatorModule.web', () => {
         expect(await FelicaEmulatorWeb.enableEmulation()).toBe(false);
     });
 
-    it('resolves for disableEmulation', async () => {
-        await expect(FelicaEmulatorWeb.disableEmulation()).resolves.toBeUndefined();
+    it('returns false for disableEmulation', async () => {
+        expect(await FelicaEmulatorWeb.disableEmulation()).toBe(false);
     });
 });

@@ -17,5 +17,7 @@ export default {
     async enableEmulation(): Promise<boolean> {
         return false;
     },
-    async disableEmulation(): Promise<void> {},
+    async disableEmulation(): Promise<boolean> {
+        return false;
+    },
 };

@@ -1,29 +1,30 @@
 import React from 'react';
 import { render } from '@testing-library/react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import WelcomeScreen from '@/app/index';
+import HomeScreen from '@/app/index';
 import { createWrapper } from '../helpers';
 
 beforeEach(() => {
     jest.clearAllMocks();
 });
 
-describe('WelcomeScreen', () => {
-    it('shows loading skeleton initially', () => {
+describe('HomeScreen', () => {
+    it('shows empty view while loading', () => {
         (AsyncStorage.getItem as jest.Mock).mockReturnValue(new Promise(() => {}));
 
-        const { toJSON } = render(<WelcomeScreen />, {
+        const { queryByText } = render(<HomeScreen />, {
             wrapper: createWrapper(),
         });
 
-        // When loading, the Skeleton component renders (no QrScanner or buttons)
-        expect(toJSON()).toBeTruthy();
+        // While loading, no content is shown (just a blank background view)
+        expect(queryByText('Settings')).toBeNull();
+        expect(queryByText(/No card saved/)).toBeNull();
     });
 
     it('shows card warning when no card is saved', async () => {
         (AsyncStorage.getItem as jest.Mock).mockResolvedValue(null);
 
-        const { findByText } = render(<WelcomeScreen />, {
+        const { findByText } = render(<HomeScreen />, {
             wrapper: createWrapper(),
         });
 
@@ -33,7 +34,7 @@ describe('WelcomeScreen', () => {
     it('shows settings button', async () => {
         (AsyncStorage.getItem as jest.Mock).mockResolvedValue(null);
 
-        const { findByText } = render(<WelcomeScreen />, {
+        const { findByText } = render(<HomeScreen />, {
             wrapper: createWrapper(),
         });
 

@@ -1,5 +1,5 @@
 import Constants from 'expo-constants';
-import {Platform} from 'react-native';
+import { Platform } from 'react-native';
 
 export type ErrorReport = {
     errorName: string;

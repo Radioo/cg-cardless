@@ -1,4 +1,6 @@
-import {defineConfig, devices} from '@playwright/test';
+import { defineConfig, devices } from '@playwright/test';
+
+const DEV_SERVER_URL = 'http://localhost:3000';
 
 export default defineConfig({
     testDir: './e2e',
@@ -8,7 +10,7 @@ export default defineConfig({
     workers: process.env.CI ? 1 : undefined,
     reporter: 'html',
     use: {
-        baseURL: 'http://localhost:3000',
+        baseURL: DEV_SERVER_URL,
         trace: 'on-first-retry',
     },
     projects: [
@@ -19,7 +21,7 @@ export default defineConfig({
     ],
     webServer: {
         command: 'npx serve dist',
-        url: 'http://localhost:3000',
+        url: DEV_SERVER_URL,
         reuseExistingServer: !process.env.CI,
     },
 });

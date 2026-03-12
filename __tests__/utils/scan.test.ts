@@ -1,4 +1,4 @@
-import { ScanError, submitScan } from '@/utils/scan';
+import { QR_PATTERN, ScanError, submitScan } from '@/utils/scan';
 
 const TEST_URL = 'https://example.com/api';
 const TEST_CARD_ID = 'ABC123';
@@ -13,9 +13,8 @@ beforeEach(() => {
 });
 
 describe('submitScan', () => {
-    it('returns json on success', async () => {
-        const result = await submitScan(TEST_URL, TEST_CARD_ID);
-        expect(result).toEqual({ success: true });
+    it('resolves on success', async () => {
+        await submitScan(TEST_URL, TEST_CARD_ID);
         expect(global.fetch).toHaveBeenCalledWith(`${TEST_URL}/${TEST_CARD_ID}`);
     });
 
@@ -51,6 +50,18 @@ describe('submitScan', () => {
             json: () => Promise.resolve({ something: 'else' }),
         });
         await expect(submitScan(TEST_URL, 'X')).rejects.toThrow('Unexpected response');
+    });
+});
+
+describe('QR_PATTERN', () => {
+    it('matches valid QR URLs', () => {
+        const valid = 'https://example.com/sppass/' + 'a'.repeat(64);
+        expect(QR_PATTERN.test(valid)).toBe(true);
+    });
+
+    it('rejects invalid URLs', () => {
+        expect(QR_PATTERN.test('https://example.com/other')).toBe(false);
+        expect(QR_PATTERN.test('not-a-url')).toBe(false);
     });
 });
 

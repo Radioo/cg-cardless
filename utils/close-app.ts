@@ -1,10 +1,9 @@
-import {Platform} from 'react-native';
-import {Router} from 'expo-router';
-import {ExitApp} from '@/modules/exit-app';
+import { Platform } from 'react-native';
+import { ExitApp } from '@/modules/exit-app';
 
-export function closeApp(router: Router) {
+export function closeApp(onWeb: () => void) {
     if (Platform.OS === 'web') {
-        router.replace('/closed');
+        onWeb();
     } else {
         ExitApp.exitApp();
     }

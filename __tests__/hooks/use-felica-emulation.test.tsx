@@ -1,6 +1,7 @@
-import {renderHook, act} from '@testing-library/react-native';
-import {Platform} from 'react-native';
-import {useFelicaEmulation} from '@/hooks/use-felica-emulation';
+import { renderHook, act } from '@testing-library/react-native';
+import { Platform } from 'react-native';
+import { useFelicaEmulation } from '@/hooks/use-felica-emulation';
+import { FelicaEmulationError } from '@/utils/felica';
 
 jest.mock('@/modules/felica-emulator', () => ({
     FelicaEmulator: {
@@ -10,15 +11,21 @@ jest.mock('@/modules/felica-emulator', () => ({
         setIdm: jest.fn(() => Promise.resolve(true)),
         setSystemCode: jest.fn(() => Promise.resolve(true)),
         enableEmulation: jest.fn(() => Promise.resolve(true)),
-        disableEmulation: jest.fn(() => Promise.resolve()),
+        disableEmulation: jest.fn(() => Promise.resolve(true)),
     },
 }));
 
 const {FelicaEmulator} = jest.requireMock('@/modules/felica-emulator');
 
+const originalPlatformOS = Platform.OS;
+
 beforeEach(() => {
     jest.clearAllMocks();
     Platform.OS = 'android';
+});
+
+afterEach(() => {
+    Platform.OS = originalPlatformOS;
 });
 
 describe('useFelicaEmulation', () => {
@@ -67,7 +74,8 @@ describe('useFelicaEmulation', () => {
         });
 
         expect(result.current.isActive).toBe(false);
-        expect(result.current.error).toBe('Failed to enable emulation');
+        expect(result.current.error).toBeInstanceOf(FelicaEmulationError);
+        expect(result.current.error?.message).toBe('Failed to enable emulation');
     });
 
     it('sets error for non-HCE-F card on enable', async () => {
@@ -77,7 +85,8 @@ describe('useFelicaEmulation', () => {
             await result.current.enable();
         });
 
-        expect(result.current.error).toMatch(/02FE/);
+        expect(result.current.error).toBeInstanceOf(FelicaEmulationError);
+        expect(result.current.error?.message).toMatch(/02FE/);
     });
 
     it('disables emulation successfully', async () => {

@@ -91,7 +91,7 @@ describe('QrScanner', () => {
 
         expect(mockPush).toHaveBeenCalledWith({
             pathname: '/scan-result',
-            params: { url: validUrl, cardId: 'E00401000008F3E3' },
+            params: { url: validUrl },
         });
         expect(queryByText('Invalid QR code')).toBeNull();
     });

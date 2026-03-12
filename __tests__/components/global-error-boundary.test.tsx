@@ -1,9 +1,9 @@
 import React from 'react';
-import {Text} from 'react-native';
-import {render, fireEvent, act} from '@testing-library/react-native';
+import { Text } from 'react-native';
+import { render, fireEvent, act } from '@testing-library/react-native';
 import * as Clipboard from 'expo-clipboard';
 
-import {GlobalErrorBoundary} from '@/components/global-error-boundary';
+import { GlobalErrorBoundary } from '@/components/global-error-boundary';
 
 jest.useFakeTimers();
 

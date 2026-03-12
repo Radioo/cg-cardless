@@ -1,7 +1,7 @@
 import { buttonTextVariants, buttonVariants } from '@/components/ui/button';
 import { NativeOnlyAnimatedView } from '@/components/ui/native-only-animated-view';
 import { TextClassContext } from '@/components/ui/text';
-import { cn } from '@/lib/utils';
+import { cn } from '@/utils/cn';
 import * as AlertDialogPrimitive from '@rn-primitives/alert-dialog';
 import * as React from 'react';
 import { Platform, View, type ViewProps } from 'react-native';
@@ -11,8 +11,6 @@ import { FullWindowOverlay as RNFullWindowOverlay } from 'react-native-screens';
 const FullWindowOverlay = Platform.OS === 'ios' ? RNFullWindowOverlay : React.Fragment;
 
 const AlertDialog = AlertDialogPrimitive.Root;
-
-const AlertDialogTrigger = AlertDialogPrimitive.Trigger;
 
 const AlertDialogPortal = AlertDialogPrimitive.Portal;
 
@@ -146,8 +144,5 @@ export {
     AlertDialogDescription,
     AlertDialogFooter,
     AlertDialogHeader,
-    AlertDialogOverlay,
-    AlertDialogPortal,
     AlertDialogTitle,
-    AlertDialogTrigger,
 };

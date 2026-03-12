@@ -53,11 +53,24 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
 
+      - name: Setup ccache
+        uses: hendrikmuhs/ccache-action@v1.2
+        with:
+          key: android-ccache-${{ inputs.profile }}
+          max-size: 2G
+
       - name: Build
         env:
           GRADLE_OPTS: "-Dorg.gradle.caching=true -Dorg.gradle.parallel=true -Dorg.gradle.logging.stacktrace=all"
           EAS_BUILD_RUNNER: "eas-build"
+          CCACHE_COMPILERCHECK: content
+          CCACHE_SLOPPINESS: file_macro,time_macros,include_file_mtime,include_file_ctime,pch_defines
+          CCACHE_DEPEND: "true"
         run: eas build --platform android --local --profile ${{ inputs.profile }} --non-interactive --output ./cg-cardless.apk
+
+      - name: Show ccache stats
+        if: always()
+        run: ccache -sv
 
       - name: Upload Gradle build reports on failure
         if: failure()

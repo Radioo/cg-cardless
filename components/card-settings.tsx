@@ -1,48 +1,35 @@
 import { Pressable, View } from 'react-native';
-import * as Clipboard from 'expo-clipboard';
 import { Ionicons } from '@expo/vector-icons';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import { Text } from '@/components/ui/text';
-import { CardConversionError, generateCardId, getDisplayIdFromCardId } from '@/utils/card';
-import { useSavedCard, useSaveCard } from '@/hooks/use-saved-card';
+import { CardConversionError, formatDisplayId, generateCardId, displayIdFromCardId } from '@/utils/card';
+import { useCopyFeedback } from '@/hooks/use-copy-feedback';
+import { useSaveCard } from '@/hooks/use-saved-card';
 import { Fonts } from '@/constants/fonts';
 
 type CardSettingsProps = {
+    savedCard: string | null | undefined;
     showDialog: (title: string, message: string) => void;
 };
 
-export function CardSettings({ showDialog }: CardSettingsProps) {
+function CardSettings({ savedCard, showDialog }: CardSettingsProps) {
     const [card, setCard] = useState('');
-    const { data: savedCard } = useSavedCard();
     const saveCardMutation = useSaveCard();
-    const [copiedField, setCopiedField] = useState<'card' | 'display' | null>(null);
-    const copiedTimerRef = useRef<ReturnType<typeof setTimeout>>(null);
-
-    const handleCopy = useCallback((value: string, field: 'card' | 'display') => {
-        Clipboard.setStringAsync(value);
-        setCopiedField(field);
-        if (copiedTimerRef.current) {
-            clearTimeout(copiedTimerRef.current);
-        }
-        copiedTimerRef.current = setTimeout(() => setCopiedField(null), 1000);
-    }, []);
+    const { copiedKey: copiedField, copy } = useCopyFeedback<'card' | 'display'>(1000);
 
     const displayId = useMemo(() => {
         if (!savedCard) {
             return null;
         }
         try {
-            return getDisplayIdFromCardId(savedCard);
-        } catch (e) {
-            if (e instanceof CardConversionError) {
-                return null;
-            }
-            throw e;
+            return displayIdFromCardId(savedCard);
+        } catch {
+            return null;
         }
     }, [savedCard]);
 
@@ -107,8 +94,10 @@ export function CardSettings({ showDialog }: CardSettingsProps) {
                         <Separator />
                         <View className="gap-1" testID="saved-card-info">
                             <Text variant="small" className="text-muted-foreground">Card ID</Text>
-                            <Pressable className="flex-row items-center gap-2" onPress={() => handleCopy(savedCard, 'card')}>
-                                <Ionicons name={copiedField === 'card' ? 'checkmark' : 'copy-outline'} size={16} className="text-muted-foreground" />
+                            <Pressable className="flex-row items-center gap-2" onPress={() => copy(savedCard, 'card')}>
+                                <View className="h-4 w-4 items-center justify-center">
+                                    <Ionicons name={copiedField === 'card' ? 'checkmark' : 'copy-outline'} size={16} className="text-muted-foreground" />
+                                </View>
                                 <Text testID="card-id-value" className="text-[15px] tracking-wider" style={{ fontFamily: Fonts.mono }}>
                                     {savedCard}
                                 </Text>
@@ -116,10 +105,12 @@ export function CardSettings({ showDialog }: CardSettingsProps) {
                             {displayId && (
                                 <>
                                     <Text testID="display-id-label" variant="small" className="mt-2 text-muted-foreground">Display ID</Text>
-                                    <Pressable className="flex-row items-center gap-2" onPress={() => handleCopy(displayId, 'display')}>
-                                        <Ionicons name={copiedField === 'display' ? 'checkmark' : 'copy-outline'} size={16} className="text-muted-foreground" />
+                                    <Pressable className="flex-row items-center gap-2" onPress={() => copy(displayId, 'display')}>
+                                        <View className="h-4 w-4 items-center justify-center">
+                                            <Ionicons name={copiedField === 'display' ? 'checkmark' : 'copy-outline'} size={16} className="text-muted-foreground" />
+                                        </View>
                                         <Text className="text-[15px] tracking-wider" style={{ fontFamily: Fonts.mono }}>
-                                            {displayId.replace(/(.{4})/g, '$1 ').trim()}
+                                            {formatDisplayId(displayId)}
                                         </Text>
                                     </Pressable>
                                 </>
@@ -131,3 +122,5 @@ export function CardSettings({ showDialog }: CardSettingsProps) {
         </Card>
     );
 }
+
+export { CardSettings };

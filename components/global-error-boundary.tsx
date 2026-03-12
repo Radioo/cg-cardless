@@ -1,8 +1,19 @@
 import React from 'react';
-import {Platform, Text} from 'react-native';
+import { Platform, Text } from 'react-native';
 
-import {ErrorScreen} from '@/components/error-screen';
-import {type ErrorReport, buildErrorReport} from '@/utils/error-report';
+import { ErrorScreen } from '@/components/error-screen';
+import { type ErrorReport, buildErrorReport } from '@/utils/error-report';
+
+type ErrorHandler = (error: unknown, isFatal?: boolean) => void;
+
+type ErrorUtilsLike = {
+    getGlobalHandler: () => ErrorHandler;
+    setGlobalHandler: (handler: ErrorHandler) => void;
+};
+
+type GlobalWithErrorUtils = typeof globalThis & {
+    ErrorUtils?: ErrorUtilsLike;
+};
 
 type Props = {
     children: React.ReactNode;
@@ -13,7 +24,7 @@ type State = {
     report: ErrorReport | null;
 };
 
-export class GlobalErrorBoundary extends React.Component<Props, State> {
+class GlobalErrorBoundary extends React.Component<Props, State> {
     private originalHandler: ((error: unknown, isFatal?: boolean) => void) | null = null;
     private webErrorHandler: ((event: ErrorEvent) => void) | null = null;
     private webRejectionHandler: ((event: PromiseRejectionEvent) => void) | null = null;
@@ -31,11 +42,11 @@ export class GlobalErrorBoundary extends React.Component<Props, State> {
     }
 
     componentDidCatch(_error: Error, info: React.ErrorInfo) {
-        if (this.state.report && info.componentStack) {
+        const { componentStack } = info;
+        if (this.state.report && componentStack) {
             this.setState(prev => ({
-                report: prev.report
-                    ? {...prev.report, componentStack: info.componentStack ?? ''}
-                    : prev.report,
+                ...prev,
+                report: prev.report ? { ...prev.report, componentStack } : prev.report,
             }));
         }
     }
@@ -57,12 +68,7 @@ export class GlobalErrorBoundary extends React.Component<Props, State> {
     }
 
     private installNativeHandler() {
-        const g = global as typeof globalThis & {
-            ErrorUtils?: {
-                getGlobalHandler: () => (error: unknown, isFatal?: boolean) => void;
-                setGlobalHandler: (handler: (error: unknown, isFatal?: boolean) => void) => void;
-            };
-        };
+        const g = global as GlobalWithErrorUtils;
         if (g.ErrorUtils) {
             this.originalHandler = g.ErrorUtils.getGlobalHandler();
             g.ErrorUtils.setGlobalHandler((error, isFatal) => {
@@ -76,11 +82,7 @@ export class GlobalErrorBoundary extends React.Component<Props, State> {
     }
 
     private removeNativeHandler() {
-        const g = global as typeof globalThis & {
-            ErrorUtils?: {
-                setGlobalHandler: (handler: (error: unknown, isFatal?: boolean) => void) => void;
-            };
-        };
+        const g = global as GlobalWithErrorUtils;
         if (g.ErrorUtils && this.originalHandler) {
             g.ErrorUtils.setGlobalHandler(this.originalHandler);
         }
@@ -133,3 +135,5 @@ export class GlobalErrorBoundary extends React.Component<Props, State> {
         return this.props.children;
     }
 }
+
+export { GlobalErrorBoundary };

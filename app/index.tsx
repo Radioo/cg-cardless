@@ -4,22 +4,17 @@ import { useRouter } from 'expo-router';
 import { Banner } from '@/components/banner';
 import { QrScanner } from '@/components/qr-scanner';
 import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
 import { Text } from '@/components/ui/text';
 import { useSavedCard } from '@/hooks/use-saved-card';
 
-export default function WelcomeScreen() {
+export default function HomeScreen() {
     const { data: savedCard, isLoading } = useSavedCard();
     const router = useRouter();
 
     const hasCard = !!savedCard?.trim();
 
     if (isLoading) {
-        return (
-            <View className="flex-1 items-center justify-center gap-2 bg-background p-5">
-                <Skeleton className="h-[300px] w-full" />
-            </View>
-        );
+        return <View className="flex-1 bg-background" />;
     }
 
     return (

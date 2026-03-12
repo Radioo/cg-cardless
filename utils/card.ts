@@ -1,4 +1,6 @@
-import CryptoJS from 'crypto-js';
+import CryptoJS from 'crypto-js/core';
+import 'crypto-js/tripledes';
+import 'crypto-js/pad-nopadding';
 
 const DISPLAY_ID_ALPHABET = "0123456789ABCDEFGHJKLMNPRSTUWXYZ";
 
@@ -31,8 +33,8 @@ const CARD_DES_KEY_BYTES = [
 type CardFormatType = 'display_id' | 'card_id';
 
 export class CardConversionError extends Error {
-    constructor(message: string) {
-        super(message);
+    constructor(message: string, options?: ErrorOptions) {
+        super(message, options);
         this.name = 'CardConversionError';
     }
 }
@@ -73,29 +75,22 @@ function getChecksum(symbols: number[]): number {
 /** Packs an array of 5-bit symbols into 8-bit bytes. */
 function pack5Bit(symbols: number[]): number[] {
     const packed: number[] = [];
-    let idx = 0;
-    let bits = 0;
-    const boundary = BITS_PER_BYTE - BITS_PER_SYMBOL; // 3
+    let buffer = 0;
+    let bufferLen = 0;
 
     for (const symbol of symbols) {
-        if (packed[idx] === undefined) {
-            packed[idx] = 0;
-        }
+        buffer = (buffer << BITS_PER_SYMBOL) | (symbol & SYMBOL_MASK);
+        bufferLen += BITS_PER_SYMBOL;
 
-        if (bits <= boundary) {
-            packed[idx] |= symbol << (boundary - bits);
-            if (bits === boundary) {
-                idx++;
-                bits = 0;
-            } else {
-                bits += BITS_PER_SYMBOL;
-            }
-        } else {
-            packed[idx] |= symbol >> (bits - boundary);
-            idx++;
-            packed[idx] = (symbol & (SYMBOL_MASK >> (BITS_PER_SYMBOL - (bits - boundary)))) << (BITS_PER_BYTE - (bits - boundary));
-            bits -= boundary;
+        if (bufferLen >= BITS_PER_BYTE) {
+            bufferLen -= BITS_PER_BYTE;
+            packed.push((buffer >> bufferLen) & 0xFF);
         }
+    }
+
+    // Flush remaining bits (left-aligned in the last byte)
+    if (bufferLen > 0) {
+        packed.push((buffer << (BITS_PER_BYTE - bufferLen)) & 0xFF);
     }
 
     return packed;
@@ -104,41 +99,28 @@ function pack5Bit(symbols: number[]): number[] {
 /** Unpacks 8-bit bytes into an array of 5-bit symbols. */
 function unpack5Bit(packed: number[]): number[] {
     const unpacked: number[] = [];
-    let unpackedBytes = 0;
-    let unpackedBits = 0;
+    let buffer = 0;
+    let bufferLen = 0;
 
     for (const byte of packed) {
-        let remainingBits = BITS_PER_BYTE;
+        buffer = (buffer << BITS_PER_BYTE) | (byte & 0xFF);
+        bufferLen += BITS_PER_BYTE;
 
-        while (remainingBits > 0) {
-            const freeBits = BITS_PER_SYMBOL - unpackedBits;
-
-            if (unpacked[unpackedBytes] === undefined) {
-                unpacked[unpackedBytes] = 0;
-            }
-
-            if (remainingBits >= freeBits) {
-                unpacked[unpackedBytes++] |= (byte >> (remainingBits - BITS_PER_SYMBOL + unpackedBits)) & (SYMBOL_MASK >> (BITS_PER_SYMBOL - freeBits));
-                unpackedBits = 0;
-                remainingBits -= freeBits;
-            } else {
-                const valueMasked = byte & (0xFF >> (BITS_PER_BYTE - remainingBits));
-                unpacked[unpackedBytes] |= valueMasked << (BITS_PER_SYMBOL - unpackedBits - remainingBits);
-                unpackedBits += remainingBits;
-                remainingBits = 0;
-
-                if (unpackedBits === BITS_PER_SYMBOL) {
-                    unpackedBits = 0;
-                    unpackedBytes++;
-                }
-            }
+        while (bufferLen >= BITS_PER_SYMBOL) {
+            bufferLen -= BITS_PER_SYMBOL;
+            unpacked.push((buffer >> bufferLen) & SYMBOL_MASK);
         }
+    }
+
+    // Flush remaining bits (right-padded with zeros)
+    if (bufferLen > 0) {
+        unpacked.push((buffer << (BITS_PER_SYMBOL - bufferLen)) & SYMBOL_MASK);
     }
 
     return unpacked;
 }
 
-export function getCardFormatType(input: string): CardFormatType {
+export function parseCardFormat(input: string): CardFormatType {
     const card = input.replace(/\s/g, '').toUpperCase();
 
     if (card.length !== CARD_ID_LENGTH) {
@@ -149,15 +131,15 @@ export function getCardFormatType(input: string): CardFormatType {
         return 'display_id';
     }
 
-    if (/^[0-9A-F]+$/.test(card)) {
+    if (/^[0-9A-F]+$/.test(card) && (card.startsWith(MAGSTRIPE_PREFIX) || card.startsWith(FELICA_PREFIX))) {
         return 'card_id';
     }
 
     throw new CardConversionError('Unknown card format');
 }
 
-export function getCardIdFromDisplayId(displayId: string): string {
-    const bytes: number[] = [];
+export function cardIdFromDisplayId(displayId: string): string {
+    const symbols: number[] = [];
 
     for (const char of displayId.toUpperCase()) {
         if (char === ' ') {
@@ -167,43 +149,44 @@ export function getCardIdFromDisplayId(displayId: string): string {
         if (val === undefined) {
             throw new CardConversionError(`Invalid character in display ID: ${char}`);
         }
-        bytes.push(val);
+        symbols.push(val);
     }
 
-    if (bytes.length !== CARD_ID_LENGTH) {
+    if (symbols.length !== CARD_ID_LENGTH) {
         throw new CardConversionError('Display ID must be 16 characters long');
     }
 
     // Validate parity, encoding, and checksum
-    if (bytes[11] % 2 !== bytes[12] % 2) {
+    if (symbols[11] % 2 !== symbols[12] % 2) {
         throw new CardConversionError('Display ID parity check failed');
     }
 
-    if (bytes[13] !== (bytes[12] ^ 1)) {
+    if (symbols[13] !== (symbols[12] ^ 1)) {
         throw new CardConversionError('Display ID encoding check failed');
     }
 
-    if (bytes[15] !== getChecksum(bytes.slice(0, 15))) {
+    if (symbols[15] !== getChecksum(symbols.slice(0, 15))) {
         throw new CardConversionError('Display ID checksum failed');
     }
 
     let cardType: number;
-    if (bytes[14] === 1) {
+    if (symbols[14] === 1) {
         cardType = TYPE_ICODE_SLI;
-    } else if (bytes[14] === 2) {
+    } else if (symbols[14] === 2) {
         cardType = TYPE_FELICA;
     } else {
         throw new CardConversionError('Unknown card type');
     }
 
-    // Reverse the XOR chain to recover original 5-bit symbols
+    // Reverse the XOR chain on a copy to recover original 5-bit symbols
+    const decoded = symbols.slice(0, 14);
     for (let i = 13; i >= 1; i--) {
-        bytes[i] ^= bytes[i - 1];
+        decoded[i] ^= decoded[i - 1];
     }
-    bytes[0] ^= cardType;
+    decoded[0] ^= cardType;
 
     // Pack 5-bit symbols into 8-bit bytes for decryption
-    const trimmed = bytes.slice(0, 13);
+    const trimmed = decoded.slice(0, 13);
     const packed = pack5Bit(trimmed);
     const packedBytes = packed.slice(0, 8);
 
@@ -218,8 +201,8 @@ export function getCardIdFromDisplayId(displayId: string): string {
             key,
             {mode: CryptoJS.mode.CBC, padding: CryptoJS.pad.NoPadding, iv},
         );
-    } catch {
-        throw new CardConversionError('Failed to decrypt display ID');
+    } catch (e) {
+        throw new CardConversionError('Failed to decrypt display ID', { cause: e });
     }
 
     const decryptedBytes = wordArrayToBytes(decrypted);
@@ -232,7 +215,7 @@ export function getCardIdFromDisplayId(displayId: string): string {
     return output;
 }
 
-export function getDisplayIdFromCardId(cardId: string): string {
+export function displayIdFromCardId(cardId: string): string {
     let cardType: number;
     if (cardId.startsWith(MAGSTRIPE_PREFIX)) {
         cardType = TYPE_ICODE_SLI;
@@ -261,8 +244,8 @@ export function getDisplayIdFromCardId(cardId: string): string {
             {mode: CryptoJS.mode.CBC, padding: CryptoJS.pad.NoPadding, iv},
         );
         encrypted = result.ciphertext;
-    } catch {
-        throw new CardConversionError('Failed to encrypt card ID');
+    } catch (e) {
+        throw new CardConversionError('Failed to encrypt card ID', { cause: e });
     }
 
     // Unpack encrypted bytes into 5-bit symbols
@@ -273,7 +256,7 @@ export function getDisplayIdFromCardId(cardId: string): string {
     // Apply XOR chain: seed with card type, set propagation value, then forward-propagate
     card[0] ^= cardType;
     card[13] = 1;
-    for (let i = 0; i <= 13; i++) {
+    for (let i = 0; i <= 12; i++) {
         card[i + 1] ^= card[i];
     }
 
@@ -292,6 +275,10 @@ export function getDisplayIdFromCardId(cardId: string): string {
     return displayId;
 }
 
+export function formatDisplayId(displayId: string): string {
+    return displayId.replace(/(.{4})/g, '$1 ').trim();
+}
+
 export function isHceFCompatible(cardId: string): boolean {
     return /^02FE[0-9A-F]{12}$/i.test(cardId);
 }
@@ -299,12 +286,10 @@ export function isHceFCompatible(cardId: string): boolean {
 const HCEF_PREFIX = '02FE';
 
 export function generateCardId(): string {
-    const hex = '0123456789ABCDEF';
-    let id = HCEF_PREFIX;
-    for (let i = 0; i < CARD_ID_LENGTH - HCEF_PREFIX.length; i++) {
-        id += hex[Math.floor(Math.random() * 16)];
-    }
-    return id;
+    const randomBytes = new Uint8Array((CARD_ID_LENGTH - HCEF_PREFIX.length) / 2);
+    crypto.getRandomValues(randomBytes);
+    const suffix = Array.from(randomBytes, (b) => b.toString(16).toUpperCase().padStart(2, '0')).join('');
+    return HCEF_PREFIX + suffix;
 }
 
 export function validateAndConvertCard(input: string): string {
@@ -314,14 +299,11 @@ export function validateAndConvertCard(input: string): string {
         throw new CardConversionError('Card cannot be empty');
     }
 
-    const formatType = getCardFormatType(cleaned);
+    const formatType = parseCardFormat(cleaned);
 
     if (formatType === 'card_id') {
-        if (!cleaned.startsWith(MAGSTRIPE_PREFIX) && !cleaned.startsWith(FELICA_PREFIX)) {
-            throw new CardConversionError('Unknown card type');
-        }
         return cleaned;
     }
 
-    return getCardIdFromDisplayId(cleaned);
+    return cardIdFromDisplayId(cleaned);
 }

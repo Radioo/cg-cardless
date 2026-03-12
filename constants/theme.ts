@@ -1,41 +1,18 @@
-const white = '#FFFFFF';
-const black = '#0D1117';
-const lightGray = '#687076';
-const darkGray = '#9BA1A6';
-const lightText = '#ECEDEE';
-const darkBackground = '#151718';
-const lightBorder = '#CCCCCC';
-const darkBorder = '#333333';
-
-export const Colors = {
+export const NAV_THEME = {
     light: {
-        text: '#11181C',
-        background: white,
-        primary: '#2196F3',
-        primaryText: white,
-        secondary: '#666666',
-        secondaryText: white,
-        error: '#D32F2F',
-        errorText: white,
-        warning: '#FFF3CD',
-        warningText: '#856404',
-        border: lightBorder,
-        inputBackground: white,
-        muted: lightGray,
+        background: 'hsl(0, 0%, 100%)',
+        border: 'hsl(0, 0%, 80%)',
+        card: 'hsl(0, 0%, 100%)',
+        notification: 'hsl(0, 73%, 51%)',
+        primary: 'hsl(207, 90%, 57%)',
+        text: 'hsl(210, 11%, 9%)',
     },
     dark: {
-        text: lightText,
-        background: darkBackground,
-        primary: '#64B5F6',
-        primaryText: black,
-        secondary: '#444444',
-        secondaryText: lightText,
-        error: '#EF5350',
-        errorText: white,
-        warning: '#3B2E00',
-        warningText: '#FFD54F',
-        border: darkBorder,
-        inputBackground: '#1E2022',
-        muted: darkGray,
+        background: 'hsl(200, 6%, 9%)',
+        border: 'hsl(0, 0%, 20%)',
+        card: 'hsl(200, 6%, 9%)',
+        notification: 'hsl(0, 79%, 63%)',
+        primary: 'hsl(209, 82%, 68%)',
+        text: 'hsl(210, 17%, 93%)',
     },
 };

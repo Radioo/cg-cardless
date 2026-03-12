@@ -6,10 +6,9 @@ import { useFocusEffect, useIsFocused } from '@react-navigation/native';
 
 import { Button } from '@/components/ui/button';
 import { Text } from '@/components/ui/text';
+import { QR_PATTERN } from '@/utils/scan';
 
-const QR_PATTERN = /^https:\/\/.+\/sppass\/[a-zA-Z0-9]{64}$/;
-
-export function QrScanner({ cardId }: { cardId: string | null }) {
+function QrScanner({ cardId }: { cardId: string | null }) {
     const [facing, setFacing] = useState<CameraType>('back');
     const [permission, requestPermission] = useCameraPermissions();
     const [validationError, setValidationError] = useState<string | null>(null);
@@ -40,7 +39,7 @@ export function QrScanner({ cardId }: { cardId: string | null }) {
         }
 
         navigated.current = true;
-        router.push({ pathname: '/scan-result', params: { url: result.data, cardId } });
+        router.push({ pathname: '/scan-result', params: { url: result.data } });
     }
 
     function toggleCameraFacing() {
@@ -101,3 +100,5 @@ export function QrScanner({ cardId }: { cardId: string | null }) {
         </>
     );
 }
+
+export { QrScanner };

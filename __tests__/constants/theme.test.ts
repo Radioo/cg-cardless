@@ -1,24 +1,22 @@
-import { Colors } from '@/constants/theme';
+const { NAV_THEME } = jest.requireActual<typeof import('@/constants/theme')>('@/constants/theme');
 
-describe('Theme Colors', () => {
-    it('has light and dark color schemes', () => {
-        expect(Colors.light).toBeDefined();
-        expect(Colors.dark).toBeDefined();
+describe('NAV_THEME', () => {
+    it('has light and dark themes', () => {
+        expect(NAV_THEME.light).toBeDefined();
+        expect(NAV_THEME.dark).toBeDefined();
     });
 
-    it('has matching keys in light and dark schemes', () => {
-        const lightKeys = Object.keys(Colors.light).sort((a, b) => a.localeCompare(b));
-        const darkKeys = Object.keys(Colors.dark).sort((a, b) => a.localeCompare(b));
-        expect(lightKeys).toEqual(darkKeys);
+    it('light theme has required navigation colors', () => {
+        expect(NAV_THEME.light.background).toBeDefined();
+        expect(NAV_THEME.light.text).toBeDefined();
+        expect(NAV_THEME.light.primary).toBeDefined();
+        expect(NAV_THEME.light.border).toBeDefined();
     });
 
-    it('has valid hex color values', () => {
-        const hexRegex = /^#[0-9A-Fa-f]{3,8}$/;
-        for (const color of Object.values(Colors.light)) {
-            expect(color).toMatch(hexRegex);
-        }
-        for (const color of Object.values(Colors.dark)) {
-            expect(color).toMatch(hexRegex);
-        }
+    it('dark theme has required navigation colors', () => {
+        expect(NAV_THEME.dark.background).toBeDefined();
+        expect(NAV_THEME.dark.text).toBeDefined();
+        expect(NAV_THEME.dark.primary).toBeDefined();
+        expect(NAV_THEME.dark.border).toBeDefined();
     });
 });

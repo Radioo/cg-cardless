@@ -91,9 +91,12 @@ class FelicaEmulatorModule : Module() {
             ensureInit()
             val emulation = nfcFCardEmulation
             val activity = appContext.currentActivity
-            if (emulation != null && activity != null) {
+            if (emulation == null || activity == null) {
+                false
+            } else {
                 emulation.disableService(activity)
                 isEmulationActive = false
+                true
             }
         }
     }

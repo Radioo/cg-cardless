@@ -1,5 +1,5 @@
 import { TextClassContext } from '@/components/ui/text';
-import { cn } from '@/lib/utils';
+import { cn } from '@/utils/cn';
 import * as Slot from '@rn-primitives/slot';
 import { cva, type VariantProps } from 'class-variance-authority';
 import { Platform, View, ViewProps } from 'react-native';
@@ -49,12 +49,12 @@ const badgeTextVariants = cva('text-xs font-medium', {
     },
 });
 
-type BadgeProps = ViewProps &
-  React.RefAttributes<View> & {
-    asChild?: boolean;
-  } & VariantProps<typeof badgeVariants>;
-
-function Badge({ className, variant, asChild, ...props }: BadgeProps) {
+function Badge({
+    className,
+    variant,
+    asChild,
+    ...props
+}: ViewProps & { asChild?: boolean } & VariantProps<typeof badgeVariants>) {
     const Component = asChild ? Slot.View : View;
     return (
         <TextClassContext.Provider value={badgeTextVariants({ variant })}>
@@ -63,5 +63,4 @@ function Badge({ className, variant, asChild, ...props }: BadgeProps) {
     );
 }
 
-export { Badge, badgeTextVariants, badgeVariants };
-export type { BadgeProps };
+export { Badge };

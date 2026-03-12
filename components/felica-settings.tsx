@@ -3,11 +3,13 @@ import { Platform } from 'react-native';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Text } from '@/components/ui/text';
-import { useSavedCard } from '@/hooks/use-saved-card';
 import { useFelicaEmulation } from '@/hooks/use-felica-emulation';
 
-export function FelicaSettings() {
-    const { data: savedCard } = useSavedCard();
+type FelicaSettingsProps = {
+    savedCard: string | null | undefined;
+};
+
+function FelicaSettings({ savedCard }: FelicaSettingsProps) {
     const felica = useFelicaEmulation(savedCard);
 
     if (Platform.OS !== 'android' || !felica.isSupported) {
@@ -31,12 +33,15 @@ export function FelicaSettings() {
                     </Text>
                 )}
                 {felica.error && (
-                    <Text className="text-sm text-destructive">{felica.error}</Text>
+                    <Text className="text-sm text-destructive">{felica.error.message}</Text>
                 )}
                 <Button
                     variant={felica.isActive ? 'secondary' : 'default'}
                     onPress={felica.isActive ? felica.disable : felica.enable}
-                    disabled={felica.loading || !felica.isActive && (!felica.canEmulate || !felica.isNfcEnabled)}
+                    disabled={
+                        felica.loading ||
+                        (!felica.isActive && (!felica.canEmulate || !felica.isNfcEnabled))
+                    }
                 >
                     <Text>{felica.isActive ? 'Disable Emulation' : 'Enable Emulation'}</Text>
                 </Button>
@@ -49,3 +54,5 @@ export function FelicaSettings() {
         </Card>
     );
 }
+
+export { FelicaSettings };

@@ -1,5 +1,5 @@
 import { TextClassContext } from '@/components/ui/text';
-import { cn } from '@/lib/utils';
+import { cn } from '@/utils/cn';
 import { cva, type VariantProps } from 'class-variance-authority';
 import { Platform, Pressable } from 'react-native';
 
@@ -74,27 +74,21 @@ const buttonTextVariants = cva(
                     Platform.select({ web: 'underline-offset-4 hover:underline group-hover:underline' })
                 ),
             },
-            size: {
-                default: '',
-                sm: '',
-                lg: '',
-                icon: '',
-            },
         },
         defaultVariants: {
             variant: 'default',
-            size: 'default',
         },
     }
 );
 
-type ButtonProps = React.ComponentProps<typeof Pressable> &
-  React.RefAttributes<typeof Pressable> &
-  VariantProps<typeof buttonVariants>;
-
-function Button({ className, variant, size, ...props }: ButtonProps) {
+function Button({
+    className,
+    variant,
+    size,
+    ...props
+}: React.ComponentProps<typeof Pressable> & VariantProps<typeof buttonVariants>) {
     return (
-        <TextClassContext.Provider value={buttonTextVariants({ variant, size })}>
+        <TextClassContext.Provider value={buttonTextVariants({ variant })}>
             <Pressable
                 className={cn(props.disabled && 'opacity-50', buttonVariants({ variant, size }), className)}
                 role="button"
@@ -105,4 +99,3 @@ function Button({ className, variant, size, ...props }: ButtonProps) {
 }
 
 export { Button, buttonTextVariants, buttonVariants };
-export type { ButtonProps };
