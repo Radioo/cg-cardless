@@ -2,6 +2,8 @@ import React from 'react';
 import { render, fireEvent, act } from '@testing-library/react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { CardSettings } from '@/components/card-settings';
+import { NAV_THEME } from '@/constants/theme';
+import { useColorScheme } from '@/hooks/use-color-scheme';
 import { createWrapper } from '../helpers';
 
 jest.mock('@expo/vector-icons', () => ({
@@ -9,9 +11,16 @@ jest.mock('@expo/vector-icons', () => ({
 }));
 
 const showDialog = jest.fn();
+const mockUseColorScheme = jest.mocked(useColorScheme);
 
 beforeEach(() => {
     jest.clearAllMocks();
+    mockUseColorScheme.mockReturnValue({
+        colorScheme: 'light',
+        isDarkColorScheme: false,
+        setColorScheme: jest.fn(),
+        toggleColorScheme: jest.fn(),
+    });
 });
 
 describe('CardSettings', () => {
@@ -44,6 +53,35 @@ describe('CardSettings', () => {
 
         const cardIdValue = await findByTestId('card-id-value');
         expect(cardIdValue).toBeTruthy();
+    });
+
+    it('uses the light muted theme color for copy icons', () => {
+        const { UNSAFE_getAllByType } = render(
+            <CardSettings savedCard="E00401000008F3E3" showDialog={showDialog} />,
+            { wrapper: createWrapper() },
+        );
+
+        const icons = UNSAFE_getAllByType('Ionicons');
+        expect(icons[0].props.color).toBe(NAV_THEME.light.mutedForeground);
+        expect(icons[1].props.color).toBe(NAV_THEME.light.mutedForeground);
+    });
+
+    it('uses the dark muted theme color for copy icons in dark mode', () => {
+        mockUseColorScheme.mockReturnValue({
+            colorScheme: 'dark',
+            isDarkColorScheme: true,
+            setColorScheme: jest.fn(),
+            toggleColorScheme: jest.fn(),
+        });
+
+        const { UNSAFE_getAllByType } = render(
+            <CardSettings savedCard="E00401000008F3E3" showDialog={showDialog} />,
+            { wrapper: createWrapper() },
+        );
+
+        const icons = UNSAFE_getAllByType('Ionicons');
+        expect(icons[0].props.color).toBe(NAV_THEME.dark.mutedForeground);
+        expect(icons[1].props.color).toBe(NAV_THEME.dark.mutedForeground);
     });
 
     it('generates a card when Generate Card is pressed', async () => {

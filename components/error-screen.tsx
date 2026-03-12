@@ -9,6 +9,8 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Text } from '@/components/ui/text';
 import { Fonts } from '@/constants/fonts';
+import { NAV_THEME } from '@/constants/theme';
+import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useCopyFeedback } from '@/hooks/use-copy-feedback';
 import { type ErrorReport, formatReportAsText } from '@/utils/error-report';
 
@@ -22,6 +24,8 @@ function ErrorScreen({ report, onReset }: ErrorScreenProps) {
     const [stackOpen, setStackOpen] = useState(true);
     const [componentStackOpen, setComponentStackOpen] = useState(false);
     const [envOpen, setEnvOpen] = useState(false);
+    const { isDarkColorScheme } = useColorScheme();
+    const iconColor = isDarkColorScheme ? NAV_THEME.dark.mutedForeground : NAV_THEME.light.mutedForeground;
 
     return (
         <SafeAreaView className="flex-1 bg-background">
@@ -49,6 +53,7 @@ function ErrorScreen({ report, onReset }: ErrorScreenProps) {
                         title="Stack Trace"
                         open={stackOpen}
                         onToggle={() => setStackOpen(!stackOpen)}
+                        iconColor={iconColor}
                     >
                         <Text className="text-xs leading-[18px]" style={{ fontFamily: Fonts.mono }}>
                             {report.stackTrace}
@@ -61,6 +66,7 @@ function ErrorScreen({ report, onReset }: ErrorScreenProps) {
                         title="Component Stack"
                         open={componentStackOpen}
                         onToggle={() => setComponentStackOpen(!componentStackOpen)}
+                        iconColor={iconColor}
                     >
                         <Text className="text-xs leading-[18px]" style={{ fontFamily: Fonts.mono }}>
                             {report.componentStack}
@@ -72,6 +78,7 @@ function ErrorScreen({ report, onReset }: ErrorScreenProps) {
                     title="Environment"
                     open={envOpen}
                     onToggle={() => setEnvOpen(!envOpen)}
+                    iconColor={iconColor}
                 >
                     <EnvRow label="Timestamp" value={report.timestamp} />
                     <EnvRow label="Platform" value={report.platform} />
@@ -97,10 +104,11 @@ type CollapsibleSectionProps = {
     title: string;
     open: boolean;
     onToggle: () => void;
+    iconColor: string;
     children: React.ReactNode;
 };
 
-function CollapsibleSection({ title, open, onToggle, children }: CollapsibleSectionProps) {
+function CollapsibleSection({ title, open, onToggle, iconColor, children }: CollapsibleSectionProps) {
     return (
         <Card className="mb-3 overflow-hidden py-0">
             <Pressable className="flex-row items-center justify-between p-3" onPress={onToggle} testID={`toggle-${title}`}>
@@ -108,7 +116,7 @@ function CollapsibleSection({ title, open, onToggle, children }: CollapsibleSect
                 <Ionicons
                     name={open ? 'chevron-up' : 'chevron-down'}
                     size={20}
-                    className="text-muted-foreground"
+                    color={iconColor}
                 />
             </Pressable>
             {open ? (

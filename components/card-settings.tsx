@@ -7,8 +7,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import { Text } from '@/components/ui/text';
+import { NAV_THEME } from '@/constants/theme';
 import { CardConversionError, formatDisplayId, generateCardId, displayIdFromCardId } from '@/utils/card';
 import { useCopyFeedback } from '@/hooks/use-copy-feedback';
+import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useSaveCard } from '@/hooks/use-saved-card';
 import { Fonts } from '@/constants/fonts';
 
@@ -21,6 +23,8 @@ function CardSettings({ savedCard, showDialog }: CardSettingsProps) {
     const [card, setCard] = useState('');
     const saveCardMutation = useSaveCard();
     const { copiedKey: copiedField, copy } = useCopyFeedback<'card' | 'display'>(1000);
+    const { isDarkColorScheme } = useColorScheme();
+    const iconColor = isDarkColorScheme ? NAV_THEME.dark.mutedForeground : NAV_THEME.light.mutedForeground;
 
     const displayId = useMemo(() => {
         if (!savedCard) {
@@ -96,7 +100,11 @@ function CardSettings({ savedCard, showDialog }: CardSettingsProps) {
                             <Text variant="small" className="text-muted-foreground">Card ID</Text>
                             <Pressable className="flex-row items-center gap-2" onPress={() => copy(savedCard, 'card')}>
                                 <View className="h-4 w-4 items-center justify-center">
-                                    <Ionicons name={copiedField === 'card' ? 'checkmark' : 'copy-outline'} size={16} className="text-muted-foreground" />
+                                    <Ionicons
+                                        name={copiedField === 'card' ? 'checkmark' : 'copy-outline'}
+                                        size={16}
+                                        color={iconColor}
+                                    />
                                 </View>
                                 <Text testID="card-id-value" className="text-[15px] tracking-wider" style={{ fontFamily: Fonts.mono }}>
                                     {savedCard}
@@ -107,7 +115,11 @@ function CardSettings({ savedCard, showDialog }: CardSettingsProps) {
                                     <Text testID="display-id-label" variant="small" className="mt-2 text-muted-foreground">Display ID</Text>
                                     <Pressable className="flex-row items-center gap-2" onPress={() => copy(displayId, 'display')}>
                                         <View className="h-4 w-4 items-center justify-center">
-                                            <Ionicons name={copiedField === 'display' ? 'checkmark' : 'copy-outline'} size={16} className="text-muted-foreground" />
+                                            <Ionicons
+                                                name={copiedField === 'display' ? 'checkmark' : 'copy-outline'}
+                                                size={16}
+                                                color={iconColor}
+                                            />
                                         </View>
                                         <Text className="text-[15px] tracking-wider" style={{ fontFamily: Fonts.mono }}>
                                             {formatDisplayId(displayId)}

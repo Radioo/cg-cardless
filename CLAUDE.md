@@ -51,6 +51,7 @@ public/            # Static web assets (favicon, apple-touch-icon)
 - **`@/` path alias** for all internal imports (e.g., `@/components/ui/button`)
 - **Named exports** for components/hooks; **default exports** only for route screens (Expo Router requirement)
 - **NativeWind/Tailwind CSS** for styling via `className` props
+- **Vector icons on native:** prefer explicit `color` props over Tailwind text color classes for `@expo/vector-icons`, because web CSS interop can differ from Android/iOS rendering
 - **UI primitives** in `components/ui/` (`Text`, `Button`, `Card`, etc.) built on `@rn-primitives` with NativeWind
 - **Custom error classes:** `CardConversionError`, `ScanError` extend `Error` with `.name` set
 

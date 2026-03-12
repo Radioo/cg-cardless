@@ -11,6 +11,7 @@ describe('NAV_THEME', () => {
         expect(NAV_THEME.light.text).toBeDefined();
         expect(NAV_THEME.light.primary).toBeDefined();
         expect(NAV_THEME.light.border).toBeDefined();
+        expect(NAV_THEME.light.mutedForeground).toBeDefined();
     });
 
     it('dark theme has required navigation colors', () => {
@@ -18,5 +19,6 @@ describe('NAV_THEME', () => {
         expect(NAV_THEME.dark.text).toBeDefined();
         expect(NAV_THEME.dark.primary).toBeDefined();
         expect(NAV_THEME.dark.border).toBeDefined();
+        expect(NAV_THEME.dark.mutedForeground).toBeDefined();
     });
 });
