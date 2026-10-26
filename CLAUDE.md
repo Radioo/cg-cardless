@@ -13,7 +13,8 @@ CG Cardless is a React Native + Expo mobile/web app for "cardless login" in supp
 - **Routing:** Expo Router 58 (file-based, screens in `app/`). Navigation hooks and theming (`useFocusEffect`, `useIsFocused`, `ThemeProvider`, `Theme`) come from `expo-router`, not `@react-navigation/*`, which is not a dependency
 - **State:** TanStack Query (async/server state) + local `useState` (no Redux/Zustand)
 - **Persistence:** AsyncStorage (`saved_card` key), wrapped in TanStack Query hooks
-- **Package manager:** npm
+- **Package manager:** npm. Node `^22.13 || ^24.3` (Expo SDK 58); CI workflows use Node 24
+- **Lockfile:** regenerate `package-lock.json` with npm 12+ (`npx npm@12 install --package-lock-only`). Older npm on Linux omits the `@emnapi/core`/`@emnapi/runtime` entries needed by sharp's and unrs-resolver's wasm builds, and `npm ci` then fails on other platforms
 
 ## Directory Structure
 
