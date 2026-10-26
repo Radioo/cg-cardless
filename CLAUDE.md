@@ -70,6 +70,7 @@ public/            # Static web assets (favicon, apple-touch-icon)
 - **Jest:** Jest 30 with the `jest-expo` preset. Setup in `jest.setup.js` (mocks for expo-camera, expo-router, AsyncStorage, native modules). `jest.resolver.js` chains Reanimated's Jest resolver in front of React Native's so the Reanimated mock loads. Test helper `__tests__/helpers.tsx` provides `createWrapper()` for QueryClientProvider.
 - **React Native Testing Library 14:** `render`, `renderHook`, `fireEvent`, `act`, `rerender` and `unmount` are async and must be awaited; it renders through `test-renderer` (not `react-test-renderer`) and has no `UNSAFE_*` queries (use `container.queryAll(...)`).
 - **Playwright:** Chromium only, serves `dist/` on port 3000. Tests in `e2e/`.
+- **Detox (iOS):** tests in `e2e-ios/`, config in `.detoxrc.js`. Simulator type comes from `DETOX_IOS_DEVICE` (default `iPhone 16`); CI sets it with `scripts/pick-ios-simulator.js` because runner images change which iPhone simulators they ship.
 - Always fix all test errors and warnings when working on tests, especially the one with "A worker process has failed to exit gracefully and has been force exited."
 
 ## Key Files

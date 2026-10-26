@@ -37,6 +37,12 @@ jobs:
           brew trust --formula wix/brew/applesimutils
           brew install applesimutils
 
+      - name: Pick iOS simulator
+        run: |
+          DEVICE=$(xcrun simctl list --json | node scripts/pick-ios-simulator.js)
+          echo "Using simulator type: $DEVICE"
+          echo "DETOX_IOS_DEVICE=$DEVICE" >> "$GITHUB_ENV"
+
       - name: Calculate native fingerprint
         id: fingerprint
         run: |

@@ -34,7 +34,8 @@ module.exports = {
         simulator: {
             type: 'ios.simulator',
             device: {
-                type: 'iPhone 16',
+                // CI sets DETOX_IOS_DEVICE to an iPhone the runner's Xcode actually ships
+                type: process.env.DETOX_IOS_DEVICE || 'iPhone 16',
             },
         },
     },
