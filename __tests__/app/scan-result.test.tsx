@@ -28,7 +28,7 @@ afterEach(() => {
 
 describe('ScanResultScreen', () => {
     it('shows success message after successful request', async () => {
-        const { findByText } = render(<ScanResultScreen />, {
+        const { findByText } = await render(<ScanResultScreen />, {
             wrapper: createWrapper(),
         });
 
@@ -44,7 +44,7 @@ describe('ScanResultScreen', () => {
             }),
         );
 
-        const { findAllByText } = render(<ScanResultScreen />, {
+        const { findAllByText } = await render(<ScanResultScreen />, {
             wrapper: createWrapper(),
         });
 
@@ -55,7 +55,7 @@ describe('ScanResultScreen', () => {
     it('shows invalid URL screen for non-matching URLs', async () => {
         (useLocalSearchParams as jest.Mock).mockReturnValue({ url: 'https://bad-url.com' });
 
-        const { findByText } = render(<ScanResultScreen />, {
+        const { findByText } = await render(<ScanResultScreen />, {
             wrapper: createWrapper(),
         });
 

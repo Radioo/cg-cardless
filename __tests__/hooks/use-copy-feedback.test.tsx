@@ -6,7 +6,7 @@ jest.useFakeTimers();
 
 describe('useCopyFeedback', () => {
     it('sets copiedKey after copy and resets after timeout', async () => {
-        const { result } = renderHook(() => useCopyFeedback());
+        const { result } = await renderHook(() => useCopyFeedback());
         expect(result.current.copiedKey).toBeNull();
 
         await act(async () => {
@@ -16,7 +16,7 @@ describe('useCopyFeedback', () => {
         expect(Clipboard.setStringAsync).toHaveBeenCalledWith('hello');
         expect(result.current.copiedKey).toBe(true);
 
-        act(() => {
+        await act(() => {
             jest.advanceTimersByTime(2000);
         });
 
@@ -24,7 +24,7 @@ describe('useCopyFeedback', () => {
     });
 
     it('tracks keyed copy feedback', async () => {
-        const { result } = renderHook(() => useCopyFeedback<'a' | 'b'>(1000));
+        const { result } = await renderHook(() => useCopyFeedback<'a' | 'b'>(1000));
 
         await act(async () => {
             await result.current.copy('text-a', 'a');
@@ -38,10 +38,28 @@ describe('useCopyFeedback', () => {
 
         expect(result.current.copiedKey).toBe('b');
 
-        act(() => {
+        await act(() => {
             jest.advanceTimersByTime(1000);
         });
 
         expect(result.current.copiedKey).toBeNull();
+    });
+
+    it('clears the pending reset timer on unmount', async () => {
+        const setTimeoutSpy = jest.spyOn(global, 'setTimeout');
+        const clearTimeoutSpy = jest.spyOn(global, 'clearTimeout');
+        const { result, unmount } = await renderHook(() => useCopyFeedback());
+
+        await act(async () => {
+            await result.current.copy('hello');
+        });
+        const resetTimerIndex = setTimeoutSpy.mock.calls.findIndex(([, delay]) => delay === 2000);
+        const resetTimer = setTimeoutSpy.mock.results[resetTimerIndex].value;
+
+        await unmount();
+
+        expect(clearTimeoutSpy).toHaveBeenCalledWith(resetTimer);
+        setTimeoutSpy.mockRestore();
+        clearTimeoutSpy.mockRestore();
     });
 });

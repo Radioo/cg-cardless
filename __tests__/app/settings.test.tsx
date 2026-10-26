@@ -16,7 +16,7 @@ describe('SettingsScreen', () => {
     it('renders title', async () => {
         (AsyncStorage.getItem as jest.Mock).mockResolvedValue(null);
 
-        const { getByText } = render(<SettingsScreen />, {
+        const { getByText } = await render(<SettingsScreen />, {
             wrapper: createWrapper(),
         });
 
@@ -27,7 +27,7 @@ describe('SettingsScreen', () => {
     it('renders input and buttons', async () => {
         (AsyncStorage.getItem as jest.Mock).mockResolvedValue(null);
 
-        const { getByText } = render(<SettingsScreen />, {
+        const { getByText } = await render(<SettingsScreen />, {
             wrapper: createWrapper(),
         });
 
@@ -40,7 +40,7 @@ describe('SettingsScreen', () => {
     it('shows card info box when card exists', async () => {
         (AsyncStorage.getItem as jest.Mock).mockResolvedValue('E00401000008F3E3');
 
-        const { findByText } = render(<SettingsScreen />, {
+        const { findByText } = await render(<SettingsScreen />, {
             wrapper: createWrapper(),
         });
 

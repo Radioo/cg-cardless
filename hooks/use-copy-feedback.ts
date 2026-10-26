@@ -1,5 +1,5 @@
 import * as Clipboard from 'expo-clipboard';
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 const DEFAULT_DURATION_MS = 2000;
 
@@ -7,6 +7,12 @@ export function useCopyFeedback<CopyKey extends string = never>(durationMs = DEF
     const [copiedKey, setCopiedKey] = useState<CopyKey | true | null>(null);
     const [copyFailed, setCopyFailed] = useState(false);
     const timerRef = useRef<ReturnType<typeof setTimeout>>(null);
+
+    useEffect(() => () => {
+        if (timerRef.current) {
+            clearTimeout(timerRef.current);
+        }
+    }, []);
 
     const copy = useCallback(async (text: string, key?: CopyKey) => {
         setCopyFailed(false);

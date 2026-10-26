@@ -10,10 +10,10 @@ afterEach(() => {
 });
 
 describe('NativeOnlyAnimatedView', () => {
-    it('renders children without animation wrapper on web', () => {
+    it('renders children without animation wrapper on web', async () => {
         Platform.OS = 'web' as typeof Platform.OS;
 
-        const { getByText, toJSON } = render(
+        const { getByText, toJSON } = await render(
             <NativeOnlyAnimatedView>
                 <Text>child</Text>
             </NativeOnlyAnimatedView>
@@ -24,10 +24,10 @@ describe('NativeOnlyAnimatedView', () => {
         expect(toJSON()).toEqual(expect.objectContaining({ type: 'Text' }));
     });
 
-    it('wraps children in Animated.View on native', () => {
+    it('wraps children in Animated.View on native', async () => {
         Platform.OS = 'android' as typeof Platform.OS;
 
-        const { getByText, toJSON } = render(
+        const { getByText, toJSON } = await render(
             <NativeOnlyAnimatedView>
                 <Text>child</Text>
             </NativeOnlyAnimatedView>

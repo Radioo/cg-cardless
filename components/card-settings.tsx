@@ -1,6 +1,6 @@
 import { Pressable, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -20,7 +20,8 @@ type CardSettingsProps = {
 };
 
 function CardSettings({ savedCard, showDialog }: CardSettingsProps) {
-    const [card, setCard] = useState('');
+    const [card, setCard] = useState(savedCard ?? '');
+    const [syncedSavedCard, setSyncedSavedCard] = useState(savedCard);
     const saveCardMutation = useSaveCard();
     const { copiedKey: copiedField, copy } = useCopyFeedback<'card' | 'display'>(1000);
     const { isDarkColorScheme } = useColorScheme();
@@ -37,11 +38,12 @@ function CardSettings({ savedCard, showDialog }: CardSettingsProps) {
         }
     }, [savedCard]);
 
-    useEffect(() => {
+    if (savedCard !== syncedSavedCard) {
+        setSyncedSavedCard(savedCard);
         if (savedCard) {
             setCard(savedCard);
         }
-    }, [savedCard]);
+    }
 
     function handleGenerate() {
         setCard(generateCardId());

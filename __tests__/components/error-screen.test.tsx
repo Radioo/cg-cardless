@@ -22,55 +22,55 @@ describe('ErrorScreen', () => {
         jest.clearAllMocks();
     });
 
-    it('renders error name and message', () => {
-        const { getByText } = render(
+    it('renders error name and message', async () => {
+        const { getByText } = await render(
             <ErrorScreen report={mockReport} onReset={jest.fn()} />,
         );
         expect(getByText('TypeError')).toBeTruthy();
         expect(getByText('Cannot read property of undefined')).toBeTruthy();
     });
 
-    it('renders source badge', () => {
-        const { getByText } = render(
+    it('renders source badge', async () => {
+        const { getByText } = await render(
             <ErrorScreen report={mockReport} onReset={jest.fn()} />,
         );
         expect(getByText('ErrorBoundary')).toBeTruthy();
     });
 
-    it('calls onReset when Try Again is pressed', () => {
+    it('calls onReset when Try Again is pressed', async () => {
         const onReset = jest.fn();
-        const { getByText } = render(
+        const { getByText } = await render(
             <ErrorScreen report={mockReport} onReset={onReset} />,
         );
-        fireEvent.press(getByText('Try Again'));
+        await fireEvent.press(getByText('Try Again'));
         expect(onReset).toHaveBeenCalledTimes(1);
     });
 
     it('copies error report to clipboard', async () => {
-        const { getByText } = render(
+        const { getByText } = await render(
             <ErrorScreen report={mockReport} onReset={jest.fn()} />,
         );
         await act(async () => {
-            fireEvent.press(getByText('Copy Error Report'));
+            await fireEvent.press(getByText('Copy Error Report'));
         });
         expect(Clipboard.setStringAsync).toHaveBeenCalled();
     });
 
-    it('toggles stack trace section', () => {
-        const { getByTestId, getByText } = render(
+    it('toggles stack trace section', async () => {
+        const { getByTestId, getByText } = await render(
             <ErrorScreen report={mockReport} onReset={jest.fn()} />,
         );
         // Stack trace is open by default
         expect(getByText(mockReport.stackTrace)).toBeTruthy();
         // Toggle closed
-        fireEvent.press(getByTestId('toggle-Stack Trace'));
+        await fireEvent.press(getByTestId('toggle-Stack Trace'));
     });
 
-    it('renders environment info when opened', () => {
-        const { getByTestId, getByText } = render(
+    it('renders environment info when opened', async () => {
+        const { getByTestId, getByText } = await render(
             <ErrorScreen report={mockReport} onReset={jest.fn()} />,
         );
-        fireEvent.press(getByTestId('toggle-Environment'));
+        await fireEvent.press(getByTestId('toggle-Environment'));
         expect(getByText('Pixel 7')).toBeTruthy();
         expect(getByText('1.0.0')).toBeTruthy();
     });

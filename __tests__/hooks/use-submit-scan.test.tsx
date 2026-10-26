@@ -16,12 +16,12 @@ beforeEach(() => {
 
 describe('useSubmitScan', () => {
     it('submits scan and returns success', async () => {
-        const { result } = renderHook(
+        const { result } = await renderHook(
             () => useSubmitScan(),
             { wrapper: createWrapper() },
         );
 
-        act(() => {
+        await act(() => {
             result.current.mutate({ url: TEST_URL, cardId: TEST_CARD_ID });
         });
 
@@ -29,8 +29,8 @@ describe('useSubmitScan', () => {
         expect(global.fetch).toHaveBeenCalledWith(`${TEST_URL}/${TEST_CARD_ID}`);
     });
 
-    it('does not fetch until mutate is called', () => {
-        const { result } = renderHook(
+    it('does not fetch until mutate is called', async () => {
+        const { result } = await renderHook(
             () => useSubmitScan(),
             { wrapper: createWrapper() },
         );
@@ -49,12 +49,12 @@ describe('useSubmitScan', () => {
             }),
         );
 
-        const { result } = renderHook(
+        const { result } = await renderHook(
             () => useSubmitScan(),
             { wrapper: createWrapper() },
         );
 
-        act(() => {
+        await act(() => {
             result.current.mutate({ url: TEST_URL, cardId: TEST_CARD_ID });
         });
 

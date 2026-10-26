@@ -16,10 +16,11 @@ beforeAll(() => {
             return;
         }
         const msg = args.map(String).join(' ');
-        // Suppress React error boundary messages
+        // Suppress React error boundary messages and test-renderer's onCaughtError log
         if (
             msg.includes('The above error') ||
-            msg.includes('Error: Uncaught')
+            msg.includes('Error: Uncaught') ||
+            msg.startsWith('Caught error:')
         ) {
             return;
         }
@@ -38,8 +39,8 @@ function ThrowingComponent({shouldThrow}: {shouldThrow: boolean}) {
 }
 
 describe('GlobalErrorBoundary', () => {
-    it('renders children when there is no error', () => {
-        const {getByText} = render(
+    it('renders children when there is no error', async () => {
+        const {getByText} = await render(
             <GlobalErrorBoundary>
                 <Text>Hello World</Text>
             </GlobalErrorBoundary>,
@@ -47,8 +48,8 @@ describe('GlobalErrorBoundary', () => {
         expect(getByText('Hello World')).toBeTruthy();
     });
 
-    it('catches render errors and shows error screen', () => {
-        const {getByText} = render(
+    it('catches render errors and shows error screen', async () => {
+        const {getByText} = await render(
             <GlobalErrorBoundary>
                 <ThrowingComponent shouldThrow={true} />
             </GlobalErrorBoundary>,
@@ -58,8 +59,8 @@ describe('GlobalErrorBoundary', () => {
         expect(getByText('React Component Error')).toBeTruthy();
     });
 
-    it('shows stack trace section by default', () => {
-        const {getByTestId, getByText} = render(
+    it('shows stack trace section by default', async () => {
+        const {getByTestId, getByText} = await render(
             <GlobalErrorBoundary>
                 <ThrowingComponent shouldThrow={true} />
             </GlobalErrorBoundary>,
@@ -70,8 +71,8 @@ describe('GlobalErrorBoundary', () => {
         expect(getByText('Test render error')).toBeTruthy();
     });
 
-    it('toggles collapsible sections', () => {
-        const {getByTestId, queryByText} = render(
+    it('toggles collapsible sections', async () => {
+        const {getByTestId, queryByText} = await render(
             <GlobalErrorBoundary>
                 <ThrowingComponent shouldThrow={true} />
             </GlobalErrorBoundary>,
@@ -82,23 +83,23 @@ describe('GlobalErrorBoundary', () => {
         expect(queryByText('Test Device')).toBeNull();
 
         // Open it
-        fireEvent.press(envToggle);
+        await fireEvent.press(envToggle);
         expect(queryByText('Test Device')).toBeTruthy();
 
         // Close it
-        fireEvent.press(envToggle);
+        await fireEvent.press(envToggle);
         expect(queryByText('Test Device')).toBeNull();
     });
 
     it('copies error report to clipboard', async () => {
-        const {getByText} = render(
+        const {getByText} = await render(
             <GlobalErrorBoundary>
                 <ThrowingComponent shouldThrow={true} />
             </GlobalErrorBoundary>,
         );
 
         await act(async () => {
-            fireEvent.press(getByText('Copy Error Report'));
+            await fireEvent.press(getByText('Copy Error Report'));
         });
 
         expect(Clipboard.setStringAsync).toHaveBeenCalledWith(
@@ -107,7 +108,7 @@ describe('GlobalErrorBoundary', () => {
         expect(getByText('Copied!')).toBeTruthy();
     });
 
-    it('resets error boundary when Try Again is pressed', () => {
+    it('resets error boundary when Try Again is pressed', async () => {
         let shouldThrow = true;
         function ConditionalThrower() {
             if (shouldThrow) {
@@ -116,7 +117,7 @@ describe('GlobalErrorBoundary', () => {
             return <Text>Recovered</Text>;
         }
 
-        const {getByText} = render(
+        const {getByText} = await render(
             <GlobalErrorBoundary>
                 <ConditionalThrower />
             </GlobalErrorBoundary>,
@@ -126,7 +127,7 @@ describe('GlobalErrorBoundary', () => {
 
         // Fix the error and reset
         shouldThrow = false;
-        fireEvent.press(getByText('Try Again'));
+        await fireEvent.press(getByText('Try Again'));
         expect(getByText('Recovered')).toBeTruthy();
     });
 });

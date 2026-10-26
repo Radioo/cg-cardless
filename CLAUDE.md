@@ -9,8 +9,8 @@ CG Cardless is a React Native + Expo mobile/web app for "cardless login" in supp
 ## Tech Stack
 
 - **Language:** TypeScript (strict mode)
-- **Framework:** React Native 0.81 / React 19 / Expo ~54
-- **Routing:** Expo Router 6 (file-based, screens in `app/`)
+- **Framework:** React Native 0.88 / React 19.3 / Expo ~58
+- **Routing:** Expo Router 58 (file-based, screens in `app/`). Navigation hooks and theming (`useFocusEffect`, `useIsFocused`, `ThemeProvider`, `Theme`) come from `expo-router`, not `@react-navigation/*`, which is not a dependency
 - **State:** TanStack Query (async/server state) + local `useState` (no Redux/Zustand)
 - **Persistence:** AsyncStorage (`saved_card` key), wrapped in TanStack Query hooks
 - **Package manager:** npm
@@ -62,10 +62,12 @@ public/            # Static web assets (favicon, apple-touch-icon)
 - **QR scanning:** `expo-camera` CameraView with regex validation (`/^https:\/\/.+\/sppass\/[a-zA-Z0-9]{64}$/`). Camera only active when screen is focused.
 - **Native modules:** Custom Expo Modules in `modules/` — `exit-app` (Android/iOS force-quit) and `felica-emulator` (Android-only HCE-F NFC emulation with config plugin for AndroidManifest).
 - **Web/PWA:** Static export (`web.output: "static"`). FeliCa disabled on web (stub). Close-app navigates to `/closed` route instead of exiting.
+- **Custom HTML shell:** `app/+html.tsx` must render `headNodes`/`bodyNodes` and spread `htmlAttributes`/`bodyAttributes` from `useServerDocumentContext()` (`expo-router/html`); without them the static export ships no JS/CSS and never hydrates.
 
 ## Testing
 
-- **Jest:** `jest-expo` preset. Setup in `jest.setup.js` (React 19 compat, mocks for expo-camera, expo-router, AsyncStorage, native modules). Test helper `__tests__/helpers.tsx` provides `createWrapper()` for QueryClientProvider.
+- **Jest:** Jest 30 with the `jest-expo` preset. Setup in `jest.setup.js` (mocks for expo-camera, expo-router, AsyncStorage, native modules). `jest.resolver.js` chains Reanimated's Jest resolver in front of React Native's so the Reanimated mock loads. Test helper `__tests__/helpers.tsx` provides `createWrapper()` for QueryClientProvider.
+- **React Native Testing Library 14:** `render`, `renderHook`, `fireEvent`, `act`, `rerender` and `unmount` are async and must be awaited; it renders through `test-renderer` (not `react-test-renderer`) and has no `UNSAFE_*` queries (use `container.queryAll(...)`).
 - **Playwright:** Chromium only, serves `dist/` on port 3000. Tests in `e2e/`.
 - Always fix all test errors and warnings when working on tests, especially the one with "A worker process has failed to exit gracefully and has been force exited."
 

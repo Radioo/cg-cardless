@@ -1,11 +1,10 @@
 import '@/global.css';
 
-import { Theme, ThemeProvider } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { PortalHost } from '@rn-primitives/portal';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useFonts } from 'expo-font';
-import { Stack } from 'expo-router';
+import { Stack, Theme, ThemeProvider } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import * as SystemUI from 'expo-system-ui';
 import { useEffect, useState } from 'react';

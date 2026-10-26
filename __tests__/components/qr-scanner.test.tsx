@@ -12,6 +12,8 @@ jest.mock('expo-router', () => ({
         replace: jest.fn(),
     })),
     useLocalSearchParams: jest.fn(() => ({})),
+    useFocusEffect: jest.fn((cb: () => void) => cb()),
+    useIsFocused: jest.fn(() => true),
 }));
 
 beforeEach(() => {
@@ -23,34 +25,34 @@ beforeEach(() => {
 });
 
 describe('QrScanner', () => {
-    it('shows grant button when permission not granted', () => {
+    it('shows grant button when permission not granted', async () => {
         (useCameraPermissions as jest.Mock).mockReturnValue([
             { granted: false, canAskAgain: true },
             jest.fn(),
         ]);
 
-        const { getByText } = render(<QrScanner cardId="E00401000008F3E3" />);
+        const { getByText } = await render(<QrScanner cardId="E00401000008F3E3" />);
         expect(getByText('Grant permission')).toBeTruthy();
     });
 
-    it('requests permission when grant button pressed', () => {
+    it('requests permission when grant button pressed', async () => {
         const requestPermission = jest.fn();
         (useCameraPermissions as jest.Mock).mockReturnValue([
             { granted: false, canAskAgain: true },
             requestPermission,
         ]);
 
-        const { getByText } = render(<QrScanner cardId="E00401000008F3E3" />);
-        fireEvent.press(getByText('Grant permission'));
+        const { getByText } = await render(<QrScanner cardId="E00401000008F3E3" />);
+        await fireEvent.press(getByText('Grant permission'));
         expect(requestPermission).toHaveBeenCalled();
     });
 
-    it('shows camera view when permission granted', () => {
-        const { getByText } = render(<QrScanner cardId="E00401000008F3E3" />);
+    it('shows camera view when permission granted', async () => {
+        const { getByText } = await render(<QrScanner cardId="E00401000008F3E3" />);
         expect(getByText('Flip camera')).toBeTruthy();
     });
 
-    it('shows error on invalid QR code', () => {
+    it('shows error on invalid QR code', async () => {
         let capturedOnBarcodeScanned: ((result: { data: string }) => void) | undefined;
 
         jest.spyOn(require('expo-camera'), 'CameraView').mockImplementation(
@@ -61,16 +63,16 @@ describe('QrScanner', () => {
             },
         );
 
-        const { getByText } = render(<QrScanner cardId="E00401000008F3E3" />);
+        const { getByText } = await render(<QrScanner cardId="E00401000008F3E3" />);
 
-        act(() => {
+        await act(() => {
             capturedOnBarcodeScanned?.({ data: 'not-a-valid-qr' });
         });
 
         expect(getByText('Invalid QR code')).toBeTruthy();
     });
 
-    it('navigates on valid QR code', () => {
+    it('navigates on valid QR code', async () => {
         let capturedOnBarcodeScanned: ((result: { data: string }) => void) | undefined;
 
         jest.spyOn(require('expo-camera'), 'CameraView').mockImplementation(
@@ -83,9 +85,9 @@ describe('QrScanner', () => {
 
         const validUrl = 'https://example.com/sppass/' + 'a'.repeat(64);
 
-        const { queryByText } = render(<QrScanner cardId="E00401000008F3E3" />);
+        const { queryByText } = await render(<QrScanner cardId="E00401000008F3E3" />);
 
-        act(() => {
+        await act(() => {
             capturedOnBarcodeScanned?.({ data: validUrl });
         });
 

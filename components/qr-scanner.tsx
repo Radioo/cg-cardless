@@ -1,8 +1,7 @@
 import { ActivityIndicator, Platform, View } from 'react-native';
 import { useCallback, useRef, useState } from 'react';
 import { BarcodeScanningResult, CameraType, CameraView, useCameraPermissions } from 'expo-camera';
-import { useRouter } from 'expo-router';
-import { useFocusEffect, useIsFocused } from '@react-navigation/native';
+import { useFocusEffect, useIsFocused, useRouter } from 'expo-router';
 
 import { Button } from '@/components/ui/button';
 import { Text } from '@/components/ui/text';

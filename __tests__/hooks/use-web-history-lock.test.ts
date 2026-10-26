@@ -9,14 +9,14 @@ afterEach(() => {
 });
 
 describe('useWebHistoryLock', () => {
-    it('does nothing on non-web platforms', () => {
+    it('does nothing on non-web platforms', async () => {
         Platform.OS = 'android' as typeof Platform.OS;
 
-        const { unmount } = renderHook(() => useWebHistoryLock());
-        expect(() => unmount()).not.toThrow();
+        const { unmount } = await renderHook(() => useWebHistoryLock());
+        await expect(unmount()).resolves.toBeUndefined();
     });
 
-    it('patches pushState and replaceState to always use / on web', () => {
+    it('patches pushState and replaceState to always use / on web', async () => {
         Platform.OS = 'web' as typeof Platform.OS;
 
         const calls: { method: string; url: string | URL | null | undefined }[] = [];
@@ -34,7 +34,7 @@ describe('useWebHistoryLock', () => {
             value: { pushState: mockPush, replaceState: mockReplace },
         });
 
-        const { unmount } = renderHook(() => useWebHistoryLock());
+        const { unmount } = await renderHook(() => useWebHistoryLock());
 
         // Patched pushState should redirect URLs to /
         window.history.pushState(null, '', '/some/path');
@@ -47,7 +47,7 @@ describe('useWebHistoryLock', () => {
         ]);
 
         // Unmount should restore so calls go through unmodified
-        unmount();
+        await unmount();
         calls.length = 0;
         window.history.pushState(null, '', '/after-unmount');
         expect(calls).toEqual([{ method: 'push', url: '/after-unmount' }]);

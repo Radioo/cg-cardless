@@ -25,7 +25,7 @@ beforeEach(() => {
 
 describe('CardSettings', () => {
     it('renders card input and buttons', async () => {
-        const { getByTestId, getByText } = render(
+        const { getByTestId, getByText } = await render(
             <CardSettings savedCard={null} showDialog={showDialog} />,
             { wrapper: createWrapper() },
         );
@@ -37,7 +37,7 @@ describe('CardSettings', () => {
     });
 
     it('shows saved card info when card exists', async () => {
-        const { findByTestId } = render(
+        const { findByTestId } = await render(
             <CardSettings savedCard="E00401000008F3E3" showDialog={showDialog} />,
             { wrapper: createWrapper() },
         );
@@ -46,7 +46,7 @@ describe('CardSettings', () => {
     });
 
     it('shows Card ID value when card is saved', async () => {
-        const { findByTestId } = render(
+        const { findByTestId } = await render(
             <CardSettings savedCard="E00401000008F3E3" showDialog={showDialog} />,
             { wrapper: createWrapper() },
         );
@@ -55,18 +55,18 @@ describe('CardSettings', () => {
         expect(cardIdValue).toBeTruthy();
     });
 
-    it('uses the light muted theme color for copy icons', () => {
-        const { UNSAFE_getAllByType } = render(
+    it('uses the light muted theme color for copy icons', async () => {
+        const { container } = await render(
             <CardSettings savedCard="E00401000008F3E3" showDialog={showDialog} />,
             { wrapper: createWrapper() },
         );
 
-        const icons = UNSAFE_getAllByType('Ionicons');
+        const icons = container.queryAll((node) => node.type === 'Ionicons');
         expect(icons[0].props.color).toBe(NAV_THEME.light.mutedForeground);
         expect(icons[1].props.color).toBe(NAV_THEME.light.mutedForeground);
     });
 
-    it('uses the dark muted theme color for copy icons in dark mode', () => {
+    it('uses the dark muted theme color for copy icons in dark mode', async () => {
         mockUseColorScheme.mockReturnValue({
             colorScheme: 'dark',
             isDarkColorScheme: true,
@@ -74,24 +74,24 @@ describe('CardSettings', () => {
             toggleColorScheme: jest.fn(),
         });
 
-        const { UNSAFE_getAllByType } = render(
+        const { container } = await render(
             <CardSettings savedCard="E00401000008F3E3" showDialog={showDialog} />,
             { wrapper: createWrapper() },
         );
 
-        const icons = UNSAFE_getAllByType('Ionicons');
+        const icons = container.queryAll((node) => node.type === 'Ionicons');
         expect(icons[0].props.color).toBe(NAV_THEME.dark.mutedForeground);
         expect(icons[1].props.color).toBe(NAV_THEME.dark.mutedForeground);
     });
 
     it('generates a card when Generate Card is pressed', async () => {
-        const { getByText, getByTestId } = render(
+        const { getByText, getByTestId } = await render(
             <CardSettings savedCard={null} showDialog={showDialog} />,
             { wrapper: createWrapper() },
         );
 
         await act(async () => {
-            fireEvent.press(getByText('Generate Card'));
+            await fireEvent.press(getByText('Generate Card'));
         });
 
         const input = getByTestId('card-input');
@@ -102,17 +102,17 @@ describe('CardSettings', () => {
     it('saves card and shows success dialog', async () => {
         (AsyncStorage.setItem as jest.Mock).mockResolvedValue(undefined);
 
-        const { getByText, getByTestId } = render(
+        const { getByText, getByTestId } = await render(
             <CardSettings savedCard={null} showDialog={showDialog} />,
             { wrapper: createWrapper() },
         );
 
         await act(async () => {
-            fireEvent.changeText(getByTestId('card-input'), 'E00401000008F3E3');
+            await fireEvent.changeText(getByTestId('card-input'), 'E00401000008F3E3');
         });
 
         await act(async () => {
-            fireEvent.press(getByText('Save Card'));
+            await fireEvent.press(getByText('Save Card'));
         });
 
         // Wait for mutation to complete
@@ -122,17 +122,17 @@ describe('CardSettings', () => {
     });
 
     it('shows error dialog for invalid card', async () => {
-        const { getByText, getByTestId } = render(
+        const { getByText, getByTestId } = await render(
             <CardSettings savedCard={null} showDialog={showDialog} />,
             { wrapper: createWrapper() },
         );
 
         await act(async () => {
-            fireEvent.changeText(getByTestId('card-input'), 'INVALID');
+            await fireEvent.changeText(getByTestId('card-input'), 'INVALID');
         });
 
         await act(async () => {
-            fireEvent.press(getByText('Save Card'));
+            await fireEvent.press(getByText('Save Card'));
         });
 
         await act(async () => {});

@@ -13,8 +13,8 @@ import {
 import { Text } from '@/components/ui/text';
 
 describe('AlertDialog', () => {
-    it('renders dialog content when open', () => {
-        const { getByText } = render(
+    it('renders dialog content when open', async () => {
+        const { getByText } = await render(
             <AlertDialog open>
                 <AlertDialogContent>
                     <AlertDialogHeader>
@@ -40,8 +40,8 @@ describe('AlertDialog', () => {
         expect(getByText('Are you sure?')).toBeTruthy();
     });
 
-    it('does not render when closed', () => {
-        const { queryByText } = render(
+    it('does not render when closed', async () => {
+        const { queryByText } = await render(
             <AlertDialog open={false}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
@@ -55,8 +55,8 @@ describe('AlertDialog', () => {
         expect(queryByText('Hidden')).toBeNull();
     });
 
-    it('renders action and cancel buttons', () => {
-        const { getByText } = render(
+    it('renders action and cancel buttons', async () => {
+        const { getByText } = await render(
             <AlertDialog open>
                 <AlertDialogContent>
                     <AlertDialogFooter>

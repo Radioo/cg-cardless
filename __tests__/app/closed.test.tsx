@@ -11,25 +11,25 @@ beforeEach(() => {
 });
 
 describe('ClosedScreen', () => {
-    it('renders done message', () => {
-        const { getByText } = render(<ClosedScreen />);
+    it('renders done message', async () => {
+        const { getByText } = await render(<ClosedScreen />);
         expect(getByText('Done')).toBeTruthy();
         expect(getByText('You can close this page now.')).toBeTruthy();
     });
 
-    it('calls window.close on web', () => {
+    it('calls window.close on web', async () => {
         const originalOS = Platform.OS;
         Platform.OS = 'web';
         try {
-            render(<ClosedScreen />);
+            await render(<ClosedScreen />);
             expect(mockClose).toHaveBeenCalled();
         } finally {
             Platform.OS = originalOS;
         }
     });
 
-    it('does not call window.close on native', () => {
-        render(<ClosedScreen />);
+    it('does not call window.close on native', async () => {
+        await render(<ClosedScreen />);
         expect(mockClose).not.toHaveBeenCalled();
     });
 });

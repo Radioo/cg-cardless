@@ -29,30 +29,30 @@ afterEach(() => {
 });
 
 describe('useFelicaEmulation', () => {
-    it('detects support and NFC on android', () => {
-        const {result} = renderHook(() => useFelicaEmulation('02FE000000000001'));
+    it('detects support and NFC on android', async () => {
+        const {result} = await renderHook(() => useFelicaEmulation('02FE000000000001'));
         expect(result.current.isSupported).toBe(true);
         expect(result.current.isNfcEnabled).toBe(true);
     });
 
-    it('reports no support on non-android', () => {
+    it('reports no support on non-android', async () => {
         Platform.OS = 'ios';
-        const {result} = renderHook(() => useFelicaEmulation('02FE000000000001'));
+        const {result} = await renderHook(() => useFelicaEmulation('02FE000000000001'));
         expect(result.current.isSupported).toBe(false);
     });
 
-    it('reports canEmulate for HCE-F compatible cards', () => {
-        const {result} = renderHook(() => useFelicaEmulation('02FE000000000001'));
+    it('reports canEmulate for HCE-F compatible cards', async () => {
+        const {result} = await renderHook(() => useFelicaEmulation('02FE000000000001'));
         expect(result.current.canEmulate).toBe(true);
     });
 
-    it('reports cannot emulate for incompatible cards', () => {
-        const {result} = renderHook(() => useFelicaEmulation('E00401000008F3E3'));
+    it('reports cannot emulate for incompatible cards', async () => {
+        const {result} = await renderHook(() => useFelicaEmulation('E00401000008F3E3'));
         expect(result.current.canEmulate).toBe(false);
     });
 
     it('enables emulation successfully', async () => {
-        const {result} = renderHook(() => useFelicaEmulation('02FE000000000001'));
+        const {result} = await renderHook(() => useFelicaEmulation('02FE000000000001'));
 
         await act(async () => {
             await result.current.enable();
@@ -67,7 +67,7 @@ describe('useFelicaEmulation', () => {
 
     it('sets error when enable fails', async () => {
         FelicaEmulator.enableEmulation.mockResolvedValueOnce(false);
-        const {result} = renderHook(() => useFelicaEmulation('02FE000000000001'));
+        const {result} = await renderHook(() => useFelicaEmulation('02FE000000000001'));
 
         await act(async () => {
             await result.current.enable();
@@ -79,7 +79,7 @@ describe('useFelicaEmulation', () => {
     });
 
     it('sets error for non-HCE-F card on enable', async () => {
-        const {result} = renderHook(() => useFelicaEmulation('E00401000008F3E3'));
+        const {result} = await renderHook(() => useFelicaEmulation('E00401000008F3E3'));
 
         await act(async () => {
             await result.current.enable();
@@ -90,7 +90,7 @@ describe('useFelicaEmulation', () => {
     });
 
     it('disables emulation successfully', async () => {
-        const {result} = renderHook(() => useFelicaEmulation('02FE000000000001'));
+        const {result} = await renderHook(() => useFelicaEmulation('02FE000000000001'));
 
         await act(async () => {
             await result.current.enable();

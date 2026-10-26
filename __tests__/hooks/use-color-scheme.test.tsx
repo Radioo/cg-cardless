@@ -29,47 +29,47 @@ beforeEach(() => {
 });
 
 describe('useColorScheme', () => {
-    it('returns light when nativewind reports light', () => {
-        const { result } = renderHook(() => useColorScheme());
+    it('returns light when nativewind reports light', async () => {
+        const { result } = await renderHook(() => useColorScheme());
 
         expect(result.current.colorScheme).toBe('light');
         expect(result.current.isDarkColorScheme).toBe(false);
     });
 
-    it('returns dark when nativewind reports dark', () => {
+    it('returns dark when nativewind reports dark', async () => {
         (useNativewindColorScheme as jest.Mock).mockReturnValue({
             colorScheme: 'dark',
             setColorScheme: mockSetColorScheme,
             toggleColorScheme: mockToggleColorScheme,
         });
 
-        const { result } = renderHook(() => useColorScheme());
+        const { result } = await renderHook(() => useColorScheme());
 
         expect(result.current.colorScheme).toBe('dark');
         expect(result.current.isDarkColorScheme).toBe(true);
     });
 
-    it('defaults to light when nativewind colorScheme is undefined', () => {
+    it('defaults to light when nativewind colorScheme is undefined', async () => {
         (useNativewindColorScheme as jest.Mock).mockReturnValue({
             colorScheme: undefined,
             setColorScheme: mockSetColorScheme,
             toggleColorScheme: mockToggleColorScheme,
         });
 
-        const { result } = renderHook(() => useColorScheme());
+        const { result } = await renderHook(() => useColorScheme());
 
         expect(result.current.colorScheme).toBe('light');
         expect(result.current.isDarkColorScheme).toBe(false);
     });
 
-    it('exposes setColorScheme from nativewind', () => {
-        const { result } = renderHook(() => useColorScheme());
+    it('exposes setColorScheme from nativewind', async () => {
+        const { result } = await renderHook(() => useColorScheme());
 
         expect(result.current.setColorScheme).toBe(mockSetColorScheme);
     });
 
-    it('exposes toggleColorScheme from nativewind', () => {
-        const { result } = renderHook(() => useColorScheme());
+    it('exposes toggleColorScheme from nativewind', async () => {
+        const { result } = await renderHook(() => useColorScheme());
 
         expect(result.current.toggleColorScheme).toBe(mockToggleColorScheme);
     });

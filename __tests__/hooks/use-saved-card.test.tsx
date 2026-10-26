@@ -11,7 +11,7 @@ describe('useSavedCard', () => {
     it('returns null when no card is stored', async () => {
         (AsyncStorage.getItem as jest.Mock).mockResolvedValue(null);
 
-        const { result } = renderHook(() => useSavedCard(), {
+        const { result } = await renderHook(() => useSavedCard(), {
             wrapper: createWrapper(),
         });
 
@@ -22,7 +22,7 @@ describe('useSavedCard', () => {
     it('returns stored card value', async () => {
         (AsyncStorage.getItem as jest.Mock).mockResolvedValue('E00401000008F3E3');
 
-        const { result } = renderHook(() => useSavedCard(), {
+        const { result } = await renderHook(() => useSavedCard(), {
             wrapper: createWrapper(),
         });
 
@@ -35,7 +35,7 @@ describe('useSaveCard', () => {
     it('stores converted card ID', async () => {
         (AsyncStorage.setItem as jest.Mock).mockResolvedValue(undefined);
 
-        const { result } = renderHook(() => useSaveCard(), {
+        const { result } = await renderHook(() => useSaveCard(), {
             wrapper: createWrapper(),
         });
 
@@ -49,7 +49,7 @@ describe('useSaveCard', () => {
     });
 
     it('rejects invalid input', async () => {
-        const { result } = renderHook(() => useSaveCard(), {
+        const { result } = await renderHook(() => useSaveCard(), {
             wrapper: createWrapper(),
         });
 

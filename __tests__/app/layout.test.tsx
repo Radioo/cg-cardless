@@ -11,23 +11,17 @@ jest.mock('expo-router', () => {
     mockStack.Screen = mockScreen;
     return {
         Stack: mockStack,
+        ThemeProvider: ({ children }: { children: React.ReactNode }) =>
+            mockReact.createElement(mockReact.Fragment, null, children),
         useRouter: jest.fn(() => ({ push: jest.fn(), back: jest.fn(), replace: jest.fn() })),
         useLocalSearchParams: jest.fn(() => ({})),
+        useFocusEffect: jest.fn((cb: () => void) => cb()),
     };
 });
 
 jest.mock('expo-status-bar', () => ({
     StatusBar: () => null,
 }));
-
-jest.mock('@react-navigation/native', () => {
-    const mockReact = require('react');
-    return {
-        ThemeProvider: ({ children }: { children: React.ReactNode }) =>
-            mockReact.createElement(mockReact.Fragment, null, children),
-        useFocusEffect: jest.fn((cb: () => void) => cb()),
-    };
-});
 
 jest.useFakeTimers();
 
@@ -36,34 +30,34 @@ describe('RootLayout', () => {
         jest.clearAllTimers();
     });
 
-    it('renders without crashing', () => {
-        const result = render(<RootLayout />);
+    it('renders without crashing', async () => {
+        const result = await render(<RootLayout />);
         expect(result).toBeTruthy();
     });
 
-    it('can be unmounted without errors', () => {
-        const result = render(<RootLayout />);
-        expect(() => result.unmount()).not.toThrow();
+    it('can be unmounted without errors', async () => {
+        const result = await render(<RootLayout />);
+        await expect(result.unmount()).resolves.toBeUndefined();
     });
 
-    it('returns null while fonts are loading', () => {
+    it('returns null while fonts are loading', async () => {
         const { useFonts } = require('expo-font');
         (useFonts as jest.Mock).mockReturnValueOnce([false]);
-        const { toJSON } = render(<RootLayout />);
+        const { toJSON } = await render(<RootLayout />);
         expect(toJSON()).toBeNull();
     });
 
-    it('wraps content in GlobalErrorBoundary', () => {
+    it('wraps content in GlobalErrorBoundary', async () => {
         const GlobalErrorBoundary = require('@/components/global-error-boundary').GlobalErrorBoundary;
         const spy = jest.spyOn(GlobalErrorBoundary.prototype, 'render');
-        render(<RootLayout />);
+        await render(<RootLayout />);
         expect(spy).toHaveBeenCalled();
         spy.mockRestore();
     });
 
-    it('sets system background color on mount', () => {
+    it('sets system background color on mount', async () => {
         const SystemUI = require('expo-system-ui');
-        render(<RootLayout />);
+        await render(<RootLayout />);
         expect(SystemUI.setBackgroundColorAsync).toHaveBeenCalled();
     });
 });

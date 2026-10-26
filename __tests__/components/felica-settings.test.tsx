@@ -19,7 +19,7 @@ describe('FelicaSettings', () => {
     it('returns null on non-android platforms', async () => {
         Platform.OS = 'ios' as typeof Platform.OS;
 
-        const { toJSON } = render(<FelicaSettings savedCard={null} />, {
+        const { toJSON } = await render(<FelicaSettings savedCard={null} />, {
             wrapper: createWrapper(),
         });
 
@@ -31,7 +31,7 @@ describe('FelicaSettings', () => {
         Platform.OS = 'android' as typeof Platform.OS;
         (FelicaEmulator.isHceFSupported as jest.Mock).mockReturnValue(false);
 
-        const { toJSON } = render(<FelicaSettings savedCard={null} />, {
+        const { toJSON } = await render(<FelicaSettings savedCard={null} />, {
             wrapper: createWrapper(),
         });
 
@@ -44,7 +44,7 @@ describe('FelicaSettings', () => {
         (FelicaEmulator.isHceFSupported as jest.Mock).mockReturnValue(true);
         (FelicaEmulator.isNfcEnabled as jest.Mock).mockReturnValue(true);
 
-        const { getByText } = render(<FelicaSettings savedCard={null} />, {
+        const { getByText } = await render(<FelicaSettings savedCard={null} />, {
             wrapper: createWrapper(),
         });
 

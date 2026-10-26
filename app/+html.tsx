@@ -1,9 +1,12 @@
-import { ScrollViewStyleReset } from 'expo-router/html';
+import { ScrollViewStyleReset, useServerDocumentContext } from 'expo-router/html';
 import type { PropsWithChildren } from 'react';
 
 export default function Root({ children }: PropsWithChildren) {
+    // Bundle <script>/<link> tags and other injected assets arrive through this context
+    const { htmlAttributes, bodyAttributes, headNodes, bodyNodes } = useServerDocumentContext();
+
     return (
-        <html lang="en">
+        <html lang="en" {...htmlAttributes}>
             <head>
                 <meta charSet="utf-8" />
                 <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
@@ -33,10 +36,12 @@ export default function Root({ children }: PropsWithChildren) {
                 ].join('') }} />
 
                 <ScrollViewStyleReset />
+                {headNodes}
             </head>
-            <body>
+            <body {...bodyAttributes}>
                 <div id="__loader"><div className="s" /></div>
                 {children}
+                {bodyNodes}
             </body>
         </html>
     );

@@ -1,8 +1,4 @@
-const { configure } = require('@testing-library/react-native');
 const { notifyManager } = require('@tanstack/react-query');
-
-// React 19 compatibility
-configure({ concurrentRoot: false });
 
 // Make react-query use microtasks instead of setTimeout so act() can flush updates
 notifyManager.setScheduler(queueMicrotask);
@@ -52,11 +48,6 @@ jest.mock('expo-router', () => ({
         replace: jest.fn(),
     })),
     useLocalSearchParams: jest.fn(() => ({})),
-}));
-
-// @react-navigation/native
-jest.mock('@react-navigation/native', () => ({
-    ...jest.requireActual('@react-navigation/native'),
     useFocusEffect: jest.fn((cb) => cb()),
     useIsFocused: jest.fn(() => true),
 }));

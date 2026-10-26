@@ -9,10 +9,10 @@ beforeEach(() => {
 });
 
 describe('HomeScreen', () => {
-    it('shows empty view while loading', () => {
+    it('shows empty view while loading', async () => {
         (AsyncStorage.getItem as jest.Mock).mockReturnValue(new Promise(() => {}));
 
-        const { queryByText } = render(<HomeScreen />, {
+        const { queryByText } = await render(<HomeScreen />, {
             wrapper: createWrapper(),
         });
 
@@ -24,7 +24,7 @@ describe('HomeScreen', () => {
     it('shows card warning when no card is saved', async () => {
         (AsyncStorage.getItem as jest.Mock).mockResolvedValue(null);
 
-        const { findByText } = render(<HomeScreen />, {
+        const { findByText } = await render(<HomeScreen />, {
             wrapper: createWrapper(),
         });
 
@@ -34,7 +34,7 @@ describe('HomeScreen', () => {
     it('shows settings button', async () => {
         (AsyncStorage.getItem as jest.Mock).mockResolvedValue(null);
 
-        const { findByText } = render(<HomeScreen />, {
+        const { findByText } = await render(<HomeScreen />, {
             wrapper: createWrapper(),
         });
 
