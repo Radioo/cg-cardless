@@ -50,6 +50,9 @@ export default function ScanResultScreen() {
                 <>
                     <Text variant="h1">Success</Text>
                     <Text className="text-center">Request completed successfully.</Text>
+                    <Button variant="secondary" onPress={() => router.dismissTo('/')} testID="scan-again-btn">
+                        <Text>Scan again</Text>
+                    </Button>
                 </>
             )}
             {isError && (
