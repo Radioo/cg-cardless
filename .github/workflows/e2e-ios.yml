@@ -31,6 +31,12 @@ jobs:
         if: steps.cache-modules.outputs.cache-hit != 'true'
         run: npm ci
 
+      # Detox's postinstall writes Detox.framework and the XCUITest runner to
+      # ~/Library/Detox, outside node_modules, so it doesn't run on a cache hit.
+      # Each part is skipped when it already exists.
+      - name: Build Detox framework cache
+        run: npx detox build-framework-cache
+
       - name: Install applesimutils
         run: |
           brew tap wix/brew
