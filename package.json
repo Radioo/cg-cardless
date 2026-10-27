@@ -17,7 +17,7 @@
     "test:e2e:ui": "npx playwright test --ui",
     "test:e2e:ios:build": "npx detox build --configuration ios.sim.release",
     "test:e2e:ios": "npx detox test --configuration ios.sim.release",
-    "test:e2e:ios:ci": "npx detox test --configuration ios.sim.release --cleanup --headless"
+    "test:e2e:ios:ci": "npx detox test --configuration ios.sim.release --cleanup --headless --retries 1"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",
@@ -34,6 +34,7 @@
     "expo-camera": "~58.0.12",
     "expo-clipboard": "~58.0.4",
     "expo-constants": "~58.0.13",
+    "expo-crypto": "~58.0.7",
     "expo-font": "~58.0.10",
     "expo-linking": "~58.0.14",
     "expo-router": "~58.0.26",

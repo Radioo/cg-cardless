@@ -1,6 +1,7 @@
 import CryptoJS from 'crypto-js/core';
 import 'crypto-js/tripledes';
 import 'crypto-js/pad-nopadding';
+import { getRandomBytes } from 'expo-crypto';
 
 const DISPLAY_ID_ALPHABET = "0123456789ABCDEFGHJKLMNPRSTUWXYZ";
 
@@ -286,8 +287,8 @@ export function isHceFCompatible(cardId: string): boolean {
 const HCEF_PREFIX = '02FE';
 
 export function generateCardId(): string {
-    const randomBytes = new Uint8Array((CARD_ID_LENGTH - HCEF_PREFIX.length) / 2);
-    crypto.getRandomValues(randomBytes);
+    // expo-crypto, not the global `crypto`: React Native has no Web Crypto global on iOS/Android
+    const randomBytes = getRandomBytes((CARD_ID_LENGTH - HCEF_PREFIX.length) / 2);
     const suffix = Array.from(randomBytes, (b) => b.toString(16).toUpperCase().padStart(2, '0')).join('');
     return HCEF_PREFIX + suffix;
 }

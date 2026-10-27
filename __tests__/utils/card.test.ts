@@ -7,12 +7,31 @@ import {
     CardConversionError,
 } from '@/utils/card';
 
+jest.mock('expo-crypto', () => ({
+    getRandomBytes: jest.fn((byteCount: number) => new Uint8Array(require('crypto').randomBytes(byteCount))),
+}));
+
 describe('generateCardId', () => {
     it('returns a 16-character HCE-F compatible hex string starting with 02FE', () => {
         const id = generateCardId();
         expect(id).toHaveLength(16);
         expect(id.startsWith('02FE')).toBe(true);
         expect(/^[0-9A-F]{16}$/.test(id)).toBe(true);
+    });
+
+    it('draws random bytes from expo-crypto, since React Native has no global crypto', () => {
+        const { getRandomBytes } = jest.requireMock('expo-crypto');
+        getRandomBytes.mockReturnValueOnce(new Uint8Array([0x01, 0x23, 0x45, 0x67, 0x89, 0xab]));
+        const globalCrypto = Object.getOwnPropertyDescriptor(globalThis, 'crypto');
+        Object.defineProperty(globalThis, 'crypto', { value: undefined, configurable: true });
+
+        try {
+            expect(generateCardId()).toBe('02FE0123456789AB');
+        } finally {
+            if (globalCrypto) {
+                Object.defineProperty(globalThis, 'crypto', globalCrypto);
+            }
+        }
     });
 });
 
