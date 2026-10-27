@@ -19,6 +19,15 @@ type Props = {
     children: React.ReactNode;
 };
 
+// Browsers hide errors from scripts the page didn't load itself (cross-origin
+// scripts, or ones the browser injects, e.g. iOS Safari's Share sheet) behind a
+// bare "Script error." with no error object and no source file. Those aren't
+// the app's errors and the app keeps running, so they shouldn't replace it
+// with the error screen.
+function isOpaqueScriptError(event: ErrorEvent): boolean {
+    return !event.error && !event.filename;
+}
+
 type State = {
     hasError: boolean;
     report: ErrorReport | null;
@@ -90,6 +99,9 @@ class GlobalErrorBoundary extends React.Component<Props, State> {
 
     private installWebHandlers() {
         this.webErrorHandler = (event: ErrorEvent) => {
+            if (isOpaqueScriptError(event)) {
+                return;
+            }
             event.preventDefault();
             this.setState({
                 hasError: true,

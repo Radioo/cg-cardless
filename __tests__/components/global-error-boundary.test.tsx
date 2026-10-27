@@ -1,5 +1,5 @@
 import React from 'react';
-import { Text } from 'react-native';
+import { Platform, Text } from 'react-native';
 import { render, fireEvent, act } from '@testing-library/react-native';
 import * as Clipboard from 'expo-clipboard';
 
@@ -129,5 +129,73 @@ describe('GlobalErrorBoundary', () => {
         shouldThrow = false;
         await fireEvent.press(getByText('Try Again'));
         expect(getByText('Recovered')).toBeTruthy();
+    });
+
+    describe('web error events', () => {
+        const originalOS = Platform.OS;
+        const originalAdd = window.addEventListener;
+        const originalRemove = window.removeEventListener;
+        let errorListener: ((event: Partial<ErrorEvent>) => void) | undefined;
+
+        beforeEach(() => {
+            Platform.OS = 'web';
+            errorListener = undefined;
+            window.addEventListener = jest.fn((type: string, listener: (event: Partial<ErrorEvent>) => void) => {
+                if (type === 'error') {
+                    errorListener = listener;
+                }
+            }) as unknown as typeof window.addEventListener;
+            window.removeEventListener = jest.fn() as unknown as typeof window.removeEventListener;
+        });
+
+        afterEach(() => {
+            Platform.OS = originalOS;
+            window.addEventListener = originalAdd;
+            window.removeEventListener = originalRemove;
+        });
+
+        it('shows error screen for errors thrown by the app', async () => {
+            const {getByText} = await render(
+                <GlobalErrorBoundary>
+                    <Text>App Content</Text>
+                </GlobalErrorBoundary>,
+            );
+            const preventDefault = jest.fn();
+
+            await act(async () => {
+                errorListener?.({
+                    error: new Error('Boom'),
+                    message: 'Uncaught Error: Boom',
+                    filename: 'https://cg-cardless.expo.app/_expo/static/js/web/entry.js',
+                    preventDefault,
+                });
+            });
+
+            expect(getByText('Boom')).toBeTruthy();
+            expect(getByText('Uncaught JS Exception')).toBeTruthy();
+            expect(preventDefault).toHaveBeenCalled();
+        });
+
+        it('ignores opaque "Script error." events from scripts the app did not load', async () => {
+            const {getByText, queryByText} = await render(
+                <GlobalErrorBoundary>
+                    <Text>App Content</Text>
+                </GlobalErrorBoundary>,
+            );
+            const preventDefault = jest.fn();
+
+            await act(async () => {
+                errorListener?.({
+                    error: null,
+                    message: 'Script error.',
+                    filename: '',
+                    preventDefault,
+                });
+            });
+
+            expect(getByText('App Content')).toBeTruthy();
+            expect(queryByText('Uncaught JS Exception')).toBeNull();
+            expect(preventDefault).not.toHaveBeenCalled();
+        });
     });
 });
